@@ -24,7 +24,7 @@ Also See alternative `agnoster_bash` _[by H@di]_
 
 Recommend installation:
 
-```
+```bash
 cd ${HOME};
 mkdir -p .bash/themes/tty-agnoster-bash;
 git clone https://github.com/w495/tty-agnoster-bash.git .bash/themes/tty-agnoster-bash
@@ -32,7 +32,8 @@ git clone https://github.com/w495/tty-agnoster-bash.git .bash/themes/tty-agnoste
 
 then add the following to your .bashrc:
 
-```
+```bash
+
 export THEME=$HOME/.bash/themes/tty-agnoster-bash/agnoster.bash
 if [[ -f $THEME ]]; then
     export DEFAULT_USER=`whoami`
