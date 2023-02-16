@@ -99,32 +99,43 @@ text_effect() {
 # under the "256 (8-bit) Colors" section, and follow the example for orange below
 fg_color() {
     case "$1" in
-        black)      echo 30;;
-        red)        echo 31;;
-        green)      echo 32;;
-        yellow)     echo 33;;
-        blue)       echo 34;;
-        magenta)    echo 35;;
-        cyan)       echo 36;;
-        white)      echo 37;;
-        orange)     echo 38\;5\;166;;
+        black)          echo 30;;
+        darkred)        echo 31;;
+        darkgreen)      echo 32;;
+        yellow)         echo 33;;
+        darkblue)       echo 34;;
+        darkmagenta)    echo 35;;
+        darkcyan)       echo 36;;
+        white)          echo 37;;
+        darkgray)       echo 90;;
+        red)            echo 91;;
+        green)          echo 92;;
+        orange)         echo 93;;
+        blue)           echo 94;;
+        magenta)        echo 95;;
+        cyan)           echo 96\;5\;166;;
     esac
 }
 
 bg_color() {
     case "$1" in
-        black)      echo 40;;
-        red)        echo 41;;
-        green)      echo 42;;
-        yellow)     echo 43;;
-        blue)       echo 44;;
-        magenta)    echo 45;;
-        cyan)       echo 46;;
-        white)      echo 47;;
-        orange)     echo 48\;5\;166;;
+        black)          echo 40;;
+        darkred)        echo 41;;
+        darkgreen)      echo 42;;
+        yellow)         echo 43;;
+        darkblue)       echo 44;;
+        darkmagenta)    echo 45;;
+        darkcyan)       echo 46;;
+        white)          echo 47;;
+        darkgray)       echo 100;;
+        red)            echo 101;;
+        green)          echo 102;;
+        orange)         echo 103;;
+        blue)           echo 104;;
+        magenta)        echo 105;;
+        cyan)           echo 106\;5\;166;;
     esac;
 }
-
 # TIL: declare is global not local, so best use a different name
 # for codes (mycodes) as otherwise it'll clobber the original.
 # this changes from BASH v3 to BASH v4.
