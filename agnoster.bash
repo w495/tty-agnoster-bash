@@ -81,8 +81,8 @@ debug() {
 
 CURRENT_BG='NONE'
 CURRENT_RBG='NONE'
-SEGMENT_SEPARATOR=''
-RIGHT_SEPARATOR=''
+SEGMENT_SEPARATOR='▒░'
+RIGHT_SEPARATOR='▒░'
 LEFT_SUBSEG=''
 RIGHT_SUBSEG=''
 
@@ -300,6 +300,12 @@ prompt_hg() {
 }
 
 # Dir: current working directory
+prompt_date() {
+    prompt_segment black cyan "$(date +%H:%M:%S)"
+}
+
+
+# Dir: current working directory
 prompt_dir() {
     prompt_segment blue black '\w'
 }
@@ -436,6 +442,7 @@ prompt_emacsdir() {
 ## Main prompt
 
 build_prompt() {
+    prompt_date
     [[ ! -z ${AG_EMACS_DIR+x} ]] && prompt_emacsdir
     prompt_status
     #[[ -z ${AG_NO_HIST+x} ]] && prompt_histdt
@@ -460,9 +467,10 @@ set_bash_prompt() {
     PR="$(ansi_single $(text_effect reset))"
     build_prompt
 
+
     # uncomment below to use right prompt
-    #     PS1='\[$(tput sc; printf "%*s" $COLUMNS "$PRIGHT"; tput rc)\]'$PR
-    PS1=$PR
+    #PS1='\[$(tput sc; printf "%*s" $COLUMNS "$PRIGHT"; tput rc)\]'$PR
+    PS1="$PR"
 }
 
 PROMPT_COMMAND=set_bash_prompt
