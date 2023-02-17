@@ -314,7 +314,7 @@ prompt_hg() {
 _LINE=1;
 
 prompt_line() {
-    prompt_segment black orange "❬${_LINE}❭";
+    prompt_segment black orange "[${_LINE}]";
     _LINE=$((_LINE+1));
 }
 
