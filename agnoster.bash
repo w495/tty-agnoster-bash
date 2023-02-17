@@ -310,15 +310,23 @@ prompt_hg() {
     fi
 }
 
-# Dir: current working directory
+
+_LINE=1;
+
+prompt_line() {
+    prompt_segment black orange "❬${_LINE}❭";
+    _LINE=$((_LINE+1));
+}
+
+
 prompt_date() {
-    prompt_segment black cyan "$(date +%H:%M:%S)"
+    prompt_segment black darkgray "$(date +%H:%M:%S)"
 }
 
 
 # Dir: current working directory
 prompt_dir() {
-    prompt_segment blue black '\w'
+    prompt_segment darkcyan black '\w'
 }
 
 # Status:
@@ -453,6 +461,7 @@ prompt_emacsdir() {
 ## Main prompt
 
 build_prompt() {
+    prompt_line
     prompt_date
     [[ ! -z ${AG_EMACS_DIR+x} ]] && prompt_emacsdir
     prompt_status
