@@ -1,6 +1,7 @@
 # tty-agnoster-bash
-Agnoster Theme for Bash that works at evil TTY (1-6).
-A Powerline-inspired theme for BASH
+Agnoster Theme for Bash that works at evil TTY (1-6). A Powerline-inspired theme for BASH
+
+![ScreenShot](tty-agnoster-bash.png)
 
 # Origins
 
@@ -40,5 +41,4 @@ if [[ -f $THEME ]]; then
     source $THEME
 fi
 ```
-
 
