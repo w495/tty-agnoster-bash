@@ -11,6 +11,8 @@ Agnoster Theme for Bash that works at evil TTY (1-6). A Powerline-inspired theme
     *  https://gist.github.com/kruton/8345450
 * As original see agnoster-bash _[by Erik Selberg]_
     * https://github.com/speedenator/agnoster-bash
+* Converted for TTY by @w495
+
 
 Also See alternative `agnoster_bash` _[by H@di]_
 → https://github.com/hadisfr/agnoster_bash
@@ -41,4 +43,3 @@ if [[ -f $THEME ]]; then
     source $THEME
 fi
 ```
-
