@@ -217,7 +217,7 @@ __tty_ag_prompt_segment() {
 
     __tty_ag_debug "Codes: "
 
-    if [[ "${CURRENT_BG}" != NONE && ${1} != "${CURRENT_BG}" ]]; then
+    if [[ ${CURRENT_BG} != NONE && ${1} != "${CURRENT_BG}"   ]]; then
         local -a intermediate=(
           "$(__tty_ag_fg_color "${CURRENT_BG}")"
           "$(__tty_ag_bg_color "${1}")"
@@ -275,7 +275,7 @@ __tty_ag_prompt_virtualenv() {
 __tty_ag_prompt_context() {
     local user
     user="$(whoami)"
-    if [[ "${user}" != "${DEFAULT_USER}" || -n "${SSH_CLIENT}" ]]; then
+    if [[ ${user} != "${DEFAULT_USER}" || -n ${SSH_CLIENT}     ]]; then
         __tty_ag_prompt_segment black default "$user@\h"
   fi
 }
@@ -324,7 +324,7 @@ __tty_ag_prompt_hg() {
     local rev st branch
     if hg id >/dev/null 2>&1; then
         if hg prompt >/dev/null 2>&1; then
-            if [[ $(hg prompt "{status|unknown}") = "?" ]]; then
+            if [[ $(hg prompt "{status|unknown}") == "?" ]]; then
                 # if files are not added
                 __tty_ag_prompt_segment red white
                 st='±'
@@ -392,7 +392,7 @@ __tty_ag_prompt_status() {
     if [[ $(jobs -l | wc -l) -gt 0 ]]; then
       symbols+=("$(__tty_ag_ansi_single "${cyan}")⚙")
   fi
-    if [[ -n "${symbols[*]}" ]]; then
+    if [[ -n ${symbols[*]}   ]]; then
       __tty_ag_prompt_segment black default "$symbols"
   fi
     true
@@ -420,7 +420,7 @@ __tty_ag_command_right_prompt() {
         times="$times$(TZ=${tz#*:} date +%H:%M)\e[0m"
         n=$((n - 10))
   done
-    if [[ -n "$times" ]]; then
+    if [[ -n $times   ]]; then
         printf "%${n}s$times\\r" ''
   fi
 }
@@ -535,12 +535,12 @@ prompt_emacsdir() {
 __tty_ag_build_prompt() {
     __tty_ag_prompt_line
     __tty_ag_prompt_date
-    if [[ -n "${AG_EMACS_DIR+x}" ]]; then
+    if [[ -n ${AG_EMACS_DIR+x}   ]]; then
       prompt_emacsdir
   fi
     __tty_ag_prompt_status
     #[[ -z ${AG_NO_HIST+x} ]] && __tty_ag_prompt_histdt
-    if [[ -z "${AG_NO_CONTEXT+x}" ]]; then
+    if [[ -z ${AG_NO_CONTEXT+x}   ]]; then
         __tty_ag_prompt_context
   fi
     __tty_ag_prompt_virtualenv
