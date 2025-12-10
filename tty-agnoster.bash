@@ -69,8 +69,6 @@
 # 'brew install bash' will set you free
 
 __tty_ag_main() {
-  echo >&2 -e "${*}"
-
   local options
   options=$(getopt -n 'rand_t' -o 'dvu:' \
     --long 'debug,verbose,user:' -- "${@}")
@@ -386,15 +384,15 @@ __tty_ag_prompt_git() {
     # ZSH_THEME_GIT_PROMPT_DIRTY='±'
     dirty=$(__tty_ag_git_status_dirty)
     stash=$(__tty_ag_git_stash_dirty)
-    ref=$(git symbolic-ref HEAD 2>/dev/null) ||
-      ref="➦ $(git describe --exact-match --tags HEAD 2>/dev/null)" || true
-      ref="➦ $(git show-ref --head -s --abbrev | head -n1 2>/dev/null)"
-    if [[ -n $dirty ]]; then
+    ref=$(git symbolic-ref HEAD 2>/dev/null || true) ||
+      ref="➦ $(git describe --exact-match --tags HEAD 2>/dev/null || true )" ||
+      ref="➦ $(git show-ref --head -s --abbrev | head -n1 2>/dev/null || true)"
+    if [[ -n ${dirty} ]]; then
       __tty_ag_prompt_segment yellow black
     else
       __tty_ag_prompt_segment green black
     fi
-    PR="$PR${ref/refs\/heads\// }$stash$dirty"
+    PR="${PR}${ref/refs\/heads\// }${stash}${dirty}"
   fi
 }
 
@@ -403,11 +401,11 @@ __tty_ag_prompt_hg() {
   local rev st branch
   if hg id >/dev/null 2>&1; then
     if hg prompt >/dev/null 2>&1; then
-      if [[ $(hg prompt "{status|unknown}") == "?" ]]; then
+      if [[ $(hg prompt "{status|unknown}" || true) == "?" ]]; then
         # if files are not added
         __tty_ag_prompt_segment red white
         st='±'
-      elif [[ -n $(hg prompt "{status|modified}") ]]; then
+      elif [[ -n $(hg prompt "{status|modified}" || true) ]]; then
         # if any modification
         __tty_ag_prompt_segment yellow black
         st='±'
@@ -415,21 +413,21 @@ __tty_ag_prompt_hg() {
         # if working copy is clean
         __tty_ag_prompt_segment green black "${CURRENT_BG}"
       fi
-      PR="$PR$(hg prompt "☿ {rev}@{branch}") $st"
+      PR="${PR}$(hg prompt "☿ {rev}@{branch}") ${st}"
     else
       st=""
-      rev=$(hg id -n 2>/dev/null | sed 's/[^-0-9]//g')
+      rev=$(hg id -n 2>/dev/null | sed 's/[^-0-9]//g' || true)
       branch=$(hg id -b 2>/dev/null)
-      if hg st | grep -q "^\?"; then
+      if hg st | grep -q "^\?" || true ; then
         __tty_ag_prompt_segment red white
         st='±'
-      elif hg st | grep -q "^[MA]"; then
+      elif hg st | grep -q "^[MA]" || true ; then
         __tty_ag_prompt_segment yellow black
         st='±'
       else
         __tty_ag_prompt_segment green black "${CURRENT_BG}"
       fi
-      PR="$PR☿ $rev@$branch $st"
+      PR="${PR}☿ ${rev}@${branch} ${st}"
     fi
   fi
 }
@@ -442,7 +440,9 @@ __tty_ag_prompt_line() {
 }
 
 __tty_ag_prompt_date() {
-  __tty_ag_prompt_segment black darkgray "$(date +%H┋%M┋%S)"
+  local _dt
+  _dt=$(date +%H┋%M┋%S)
+  __tty_ag_prompt_segment black darkgray "${_dt}"
 }
 
 # Dir: current working directory
@@ -462,17 +462,17 @@ __tty_ag_prompt_status() {
   cyan=$(__tty_ag_fg_color cyan)
 
   symbols=()
-  if [[ $RETVAL -ne 0 ]]; then
+  if [[ ${RETVAL} -ne 0 ]]; then
     symbols+=("$(__tty_ag_ansi_single "${red}")✘")
   fi
-  if [[ $UID -eq 0 ]]; then
+  if [[ ${UID} -eq 0 ]]; then
     symbols+=("$(__tty_ag_ansi_single "${yellow}")⚡")
   fi
-  if [[ $(jobs -l | wc -l) -gt 0 ]]; then
+  if [[ $(jobs -l | wc -l || true) -gt 0 ]]; then
     symbols+=("$(__tty_ag_ansi_single "${cyan}")⚙")
   fi
   if [[ -n ${symbols[*]} ]]; then
-    __tty_ag_prompt_segment black default "$symbols"
+    __tty_ag_prompt_segment black default "${symbols}"
   fi
   true
 }
@@ -492,15 +492,15 @@ __tty_ag_command_right_prompt() {
   local times=" n=${COLUMNS} tz"
   for tz in 'ZRH:Europe/Zurich' 'PIT:US/Eastern' \
     'MTV:US/Pacific' 'TOK:Asia/Tokyo'; do
-    if [[ $n -le 40 ]]; then
+    if [[ ${n} -le 40 ]]; then
       break
     fi
-    times="$times ${tz%%:*}\e[30;1m:\e[0;36;1m"
-    times="$times$(TZ=${tz#*:} date +%H:%M)\e[0m"
+    times="${times} ${tz%%:*}\e[30;1m:\e[0;36;1m"
+    times="${times}$(TZ=${tz#*:} date +%H:%M)\e[0m"
     n=$((n - 10))
   done
-  if [[ -n $times ]]; then
-    printf "%${n}s$times\\r" ''
+  if [[ -n ${times} ]]; then
+    printf "%${n}s${times}\\r" ''
   fi
 }
 
@@ -513,10 +513,10 @@ __tty_ag_ansi_r() {
 
   seq=""
   for ((i = 0; i < ${#codes[@]}; i++)); do
-    if [[ -n $seq ]]; then
+    if [[ -n ${seq} ]]; then
       seq="${seq};"
     fi
-    seq="${seq}${codes[$i]}"
+    seq="${seq}${codes[${i}]}"
   done
   __tty_ag_debug "ansi debug:" '\\[\\033['"${seq}"'m\\]'
   echo -ne '\033['"${seq}"'m'
@@ -545,7 +545,7 @@ __tty_ag_prompt_right_segment() {
       "${codes[@]}"
       "${bg}"
     )
-    __tty_ag_debug "Added $bg as background to codes"
+    __tty_ag_debug "Added ${bg} as background to codes"
   fi
   if [[ -n $2 ]]; then
     fg=$(__tty_ag_fg_color "${2}")
@@ -553,7 +553,7 @@ __tty_ag_prompt_right_segment() {
       "${codes[@]}"
       "${fg}"
     )
-    __tty_ag_debug "Added $fg as foreground to codes"
+    __tty_ag_debug "Added ${fg} as foreground to codes"
   fi
 
   __tty_ag_debug "Right Codes: "
@@ -580,7 +580,7 @@ __tty_ag_prompt_right_segment() {
   #     __tty_ag_debug "no current BG, codes is $codes[@]"
   #     PRIGHT="$PRIGHT$(__tty_ag_ansi codes[@]) "
   # fi
-  CURRENT_RBG=$1
+  CURRENT_RBG=${1}
   if [[ -n ${3} ]]; then
     PRIGHT="${PRIGHT}${3}"
   fi
@@ -605,7 +605,7 @@ __tty_ag_prompt_right_segment() {
 
 __tty_ag_prompt_emacsdir() {
   # no color or other setting... this will be deleted per above
-  PR="DIR \w DIR$PR"
+  PR="DIR \w DIR${PR}"
 }
 
 ######################################################################
@@ -641,7 +641,7 @@ __tty_ag_set_bash_prompt() {
 
   # uncomment below to use right prompt
   # PS1='\[$(tput sc; printf "%*s" $COLUMNS "$PRIGHT"; tput rc)\]'$PR
-  PS1="$PR"
+  PS1="${PR}"
 }
 
 __tty_ag_main "${@}"
