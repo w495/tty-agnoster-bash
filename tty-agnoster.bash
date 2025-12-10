@@ -68,6 +68,9 @@
 # note: requires bash v4+... Mac users - you often have bash3.
 # 'brew install bash' will set you free
 
+ SEGMENT_SEPARATOR='▒░'
+ RIGHT_SEPARATOR='▒░'
+
 __tty_ag_main() {
   local options
   options=$(getopt -n 'rand_t' -o 'dvu:' \
@@ -76,11 +79,6 @@ __tty_ag_main() {
 
   local DEFAULT_USER
   local VERBOSE_MODE=false
-
-  local -r CURRENT_BG='NONE'
-  local -r CURRENT_RBG='NONE'
-  local -r SEGMENT_SEPARATOR='▒░'
-  local -r RIGHT_SEPARATOR='▒░'
 
   while [[ -n ${options} ]]; do
     case ${1} in
@@ -127,8 +125,20 @@ __tty_ag_text_effect() {
   bold)
     echo 1
     ;;
+  dim)
+    echo 2
+    ;;
+  italic)
+    echo 3
+    ;;
   underline)
     echo 4
+    ;;
+  reverse)
+    echo 7
+    ;;
+  del)
+    echo 9
     ;;
   *)
     echo 0
@@ -181,10 +191,13 @@ __tty_ag_fg_color() {
     echo 95
     ;;
   cyan)
-    echo 96\;5\;166
+    echo 96
+    ;;
+  gray)
+    echo 96
     ;;
   *)
-    echo 30
+    echo 0
     ;;
   esac
 }
@@ -234,10 +247,13 @@ __tty_ag_bg_color() {
     echo 105
     ;;
   cyan)
-    echo '106\;5\;166'
+    echo 106
+    ;;
+  gray)
+    echo 107
     ;;
   *)
-    echo 40
+    echo 0
     ;;
   esac
 }
@@ -255,7 +271,6 @@ __tty_ag_ansi() {
   done
   __tty_ag_debug "ansi debug:" '\\[\\033['"${seq}"'m\\]'
   echo -ne '\[\033['"${seq}"'m\]'
-  # PR="$PR\[\033[${seq}m\]"
 }
 
 __tty_ag_ansi_single() {
@@ -442,12 +457,12 @@ __tty_ag_prompt_line() {
 __tty_ag_prompt_date() {
   local _dt
   _dt=$(date +%H┋%M┋%S)
-  __tty_ag_prompt_segment black darkgray "${_dt}"
+  __tty_ag_prompt_segment black darkgray " ${_dt}"
 }
 
 # Dir: current working directory
 __tty_ag_prompt_dir() {
-  __tty_ag_prompt_segment darkcyan black '\w'
+  __tty_ag_prompt_segment darkcyan darkgray '\w'
 }
 
 # Status:
