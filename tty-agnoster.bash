@@ -344,7 +344,7 @@ __tty_ag_git_status_dirty() {
   local dirty
   dirty=$(git status -s 2>/dev/null | tail -n 1 || true)
   if [[ -n ${dirty} ]]; then
-    echo " ● ${dirty}"
+    echo ' <!>'
   fi
 }
 
