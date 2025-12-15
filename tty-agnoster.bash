@@ -1,84 +1,21 @@
 #!/usr/bin/env bash
 # shellcheck enable=all
 
-# vim: ft=bash ts=2 sw=2 sts=2
-#
-# agnoster's Theme - https://gist.github.com/3712874
-# A Powerline-inspired theme for BASH
-#
-# (Converted from ZSH theme by Kenny Root)
-# https://gist.github.com/kruton/8345450
-#
-# Updated & fixed by Erik Selberg erik@selberg.org 1/14/17
-# Tested on MacOSX, Ubuntu, Amazon Linux
-# Bash v3 and v4
-#
-# # README
-#
-# In order for this theme to render correctly, you will need a
-# [Powerline-patched font](https://gist.github.com/1595572).
-# I recommend: https://github.com/powerline/fonts.git
-# > git clone https://github.com/powerline/fonts.git fonts
-# > cd fonts
-# > install.sh
-
-# In addition, I recommend the
-# [Solarized theme](https://github.com/altercation/solarized/) and, if you're
-# using it on Mac OS X, [iTerm 2](http://www.iterm2.com/) over Terminal.app -
-# it has significantly better color fidelity.
-
-# Install:
-
-# I recommend the following:
-# $ cd home
-# $ mkdir -p .bash/themes/agnoster-bash
-# $ git clone https://github.com/speedenator/agnoster-bash.git .bash/themes/agnoster-bash
-
-# then add the following to your .bashrc:
-
-# export THEME=$HOME/.bash/themes/agnoster-bash/agnoster.bash
-# if [[ -f $THEME ]]; then
-#     DEFAULT_USER=$(whoami)
-#     source $THEME ${DEFAULT_USER}
-# fi
-
-#
-# # Goals
-#
-# The aim of this theme is to only show you *relevant* information. Like most
-# prompts, it will only show git information when in a git working directory.
-# However, it goes a step further: everything from the current user and
-# hostname to whether the last call exited with an error to whether background
-# jobs are running in this shell will all be displayed automatically when
-# appropriate.
-
-# Generally speaking, this script has limited support for right
-# prompts (ala powerlevel9k on zsh), but it's pretty problematic in Bash.
-# The general pattern is to write out the right prompt, hit \r, then
-# write the left. This is problematic for the following reasons:
-# - Doesn't properly resize dynamically when you resize the terminal
-# - Changes to the prompt (like clearing and re-typing, super common) deletes the prompt
-# - Getting the right alignment via columns / tput cols is pretty problematic (and is a bug in this version)
-# - Bash prompt escapes (like \h or \w) don't get interpolated
-#
-# all in all, if you really, really want right-side prompts without a
-# ton of work, recommend going to zsh for now. If you know how to fix this,
-# would appreciate it!
-
-# note: requires bash v4+... Mac users - you often have bash3.
-# 'brew install bash' will set you free
-
- SEGMENT_SEPARATOR='▒░'
- RIGHT_SEPARATOR='▒░'
+export DEFAULT_USER='_'
+export SEGMENT_SEPARATOR='▒░'
+export RIGHT_SEPARATOR='▒░'
+export VERBOSE_MODE=false
 
 __tty_ag_main() {
   local options
-  options=$(getopt -n 'rand_t' -o 'dvu:' \
-    --long 'debug,verbose,user:' -- "${@}")
+  local this="${BASH_SOURCE[0]}"
+  options=$(
+    getopt -n "${this}" \
+    -o 'dvu:s:l:r:' \
+    --long 'debug,verbose,user:,separator:,left:,right' \
+    -- "${@}" \
+  )
   eval set -- "${options}"
-
-  local DEFAULT_USER
-  local VERBOSE_MODE=false
 
   while [[ -n ${options} ]]; do
     case ${1} in
@@ -86,9 +23,17 @@ __tty_ag_main() {
       DEFAULT_USER="${2}"
       shift 2
       ;;
-    -v | -d | --debug | --verbose)
+    -d | --debug |  -v | --verbose)
       VERBOSE_MODE=true
       shift 1
+      ;;
+    -l | --left | -s | --separator )
+      SEGMENT_SEPARATOR="${2}"
+      shift 2
+      ;;
+    -r | --right )
+      RIGHT_SEPARATOR="${2}"
+      shift 2
       ;;
     '--' | '')
       shift 1
@@ -106,10 +51,12 @@ __tty_ag_main() {
 
 __tty_ag_debug() {
   if [[ ${VERBOSE_MODE} == true ]]; then
-    local -ir offset=2
+    local -ir offset=1
     local -r func="${FUNCNAME[${offset}]}"
     local -r line="${BASH_LINENO[${offset}]}"
-    echo >&2 -e "${func}[${line}] ${*}"
+
+    printf -v x "%q" "${@}"
+    printf "%s %s\n"  "${func}[${line}]" "${x}" >&2
   fi
 }
 
@@ -258,102 +205,125 @@ __tty_ag_bg_color() {
   esac
 }
 
-__tty_ag_ansi() {
-  local seq
+__tty_ag_format() {
   local -a codes=("${@}")
-  __tty_ag_debug "ansi: $* aka ${codes[*]}"
-  seq=""
+  __tty_ag_debug "format: ${codes[*]}"
+  local seq=''
   for ((i = 0; i < ${#codes[@]}; i++)); do
     if [[ -n ${seq} ]]; then
       seq="${seq};"
     fi
     seq="${seq}${codes[${i}]}"
   done
-  __tty_ag_debug "ansi debug:" '\\[\\033['"${seq}"'m\\]'
-  echo -ne '\[\033['"${seq}"'m\]'
+  __tty_ag_debug "\\033['${seq}'m"
+  echo -ne "\033[${seq}m"
 }
 
 __tty_ag_ansi_single() {
-  echo -ne '\[\033['"${1}"'m\]'
+  echo -ne "\033[${1}m"
 }
 
 # Begin a segment
 # Takes two arguments, background and foreground. Both can be omitted,
 # rendering default background/foreground.
-__tty_ag_prompt_segment() {
-  local bg fg
+__tty_ag_segment() {
+  local current_bg_name="${1}"
+  local prompt="${2}"
+  local bg_name="${3}"
+  local fg_name="${4}"
+  local text="${5}"
+
+  __tty_ag_debug "Segment:"
+  __tty_ag_debug "current_bg_name=${current_bg_name}"
+  __tty_ag_debug "prompt=${prompt}"
+  __tty_ag_debug "bg_name=${bg_name}"
+  __tty_ag_debug "fg_name=${fg_name}"
+  __tty_ag_debug "text=${text}"
+
+  local -i bg_code
+  local -i fg_code
   local -a codes
-  __tty_ag_debug "Prompting 1=${1} 2=${2} 3=${3}"
-  codes=(
-    "${codes[@]}"
-  )
 
-  if [[ -n $1 ]]; then
-    bg=$(__tty_ag_bg_color "${1}")
-    codes=(
-      "${codes[@]}"
-      "${bg}"
-    )
-    __tty_ag_debug "Added ${bg} as background to codes"
+  codes=("$(__tty_ag_text_effect reset)")
+
+  if [[ -n "${bg_name}" ]]; then
+    bg_code=$(__tty_ag_bg_color "${bg_name}")
+    codes=("${codes[@]}" "${bg_code}")
+    __tty_ag_debug "Added ${bg_code} as background to codes"
   fi
-  if [[ -n $2 ]]; then
-    fg=$(__tty_ag_fg_color "${2}")
-    codes=(
-      "${codes[@]}"
-      "${fg}"
-    )
-    __tty_ag_debug "Added ${fg} as foreground to codes"
+  if [[ -n "${fg_name}" ]]; then
+    fg_code=$(__tty_ag_fg_color "${fg_name}")
+    codes=("${codes[@]}" "${fg_code}")
+    __tty_ag_debug "Added ${fg_code} as foreground to codes"
   fi
-
-  __tty_ag_debug "Codes: "
-
-  if [[ ${CURRENT_BG} != NONE && ${1} != "${CURRENT_BG}" ]]; then
+  if [[ ${current_bg_name} != NONE && "${bg_name}" != "${current_bg_name}" ]]; then
     local -a intermediate=(
-      "$(__tty_ag_fg_color "${CURRENT_BG}")"
-      "$(__tty_ag_bg_color "${1}")"
+      "$(__tty_ag_fg_color "${current_bg_name}")"
+      "$(__tty_ag_bg_color "${bg_name}")"
     )
     local pre_prompt
-    pre_prompt=$(__tty_ag_ansi "${intermediate[@]}")
+    pre_prompt=$(__tty_ag_format "${intermediate[@]}")
     __tty_ag_debug "pre prompt ${pre_prompt}"
-    PR="${PR} ${pre_prompt}${SEGMENT_SEPARATOR}"
-    local post_prompt
-    post_prompt=$(__tty_ag_ansi "${codes[@]}")
-    __tty_ag_debug "post prompt ${post_prompt}"
-    PR="${PR}${post_prompt} "
+    prompt="${prompt}${pre_prompt}${SEGMENT_SEPARATOR}"
   else
-    local post_prompt
-    post_prompt=$(__tty_ag_ansi "${codes[@]}")
     __tty_ag_debug "no current BG, codes is ${codes[*]}"
-    PR="${PR}${post_prompt}"
   fi
-  CURRENT_BG=${1}
-  if [[ -n ${3} ]]; then
-    PR="${PR}${3}"
+  local post_prompt
+  post_prompt=$(__tty_ag_format "${codes[@]}")
+  __tty_ag_debug "post prompt ${post_prompt}"
+  prompt="${prompt}${post_prompt}"
+  if [[ -n ${text} ]]; then
+    prompt="${prompt}${text}"
   fi
+  echo -en "${prompt}"
+}
+
+__tty_ag_prompt_segment_left() {
+  local bg_name="${1}"
+  __tty_ag_debug "bg_name=${1} fg_name=${2} text='${3}'"
+  PS1L=$(__tty_ag_segment "${CURRENT_LBG}" "${PS1L}" "${@}")
+  CURRENT_LBG="${bg_name}"
+}
+
+
+# Begin a segment on the right
+# Takes two arguments, background and foreground. Both can be omitted,
+# rendering default background/foreground.
+__tty_ag_prompt_segment_right() {
+  __tty_ag_debug "bg_name=${1} fg_name=${2} text='${3}'"
+  PS1R=$(__tty_ag_segment "${CURRENT_RBG}" "${PS1R}" "${@}")
+  CURRENT_RBG=${bg_name}
 }
 
 # End the prompt, closing any open segments
 __tty_ag_prompt_end() {
-  if [[ -n ${CURRENT_BG} ]]; then
+  if [[ -n ${CURRENT_LBG} ]]; then
     local -a codes=(
       "$(__tty_ag_text_effect reset)"
-      "$(__tty_ag_fg_color "${CURRENT_BG}")"
+      "$(__tty_ag_fg_color "${CURRENT_LBG}")"
     )
-    PR="${PR} $(__tty_ag_ansi "${codes[@]}")${SEGMENT_SEPARATOR}"
+    PS1L="${PS1L}$(__tty_ag_format "${codes[@]}")${SEGMENT_SEPARATOR}"
   fi
   local -a reset=(
     "$(__tty_ag_text_effect reset)"
   )
-  PR="${PR} $(__tty_ag_ansi "${reset[@]}")"
-  CURRENT_BG=''
+  local reset_format
+  reset_format=$(__tty_ag_format "${reset[@]}")
+
+  PS1L="${PS1L}${reset_format}"
+  PS1R="${PS1R}${reset_format}"
+
+
+  CURRENT_LBG=''
+  CURRENT_RBG=''
 }
 
 ### virtualenv prompt
 __tty_ag_prompt_virtualenv() {
   if [[ -n ${VIRTUAL_ENV} ]]; then
     color=cyan
-    __tty_ag_prompt_segment "${color}" default
-    __tty_ag_prompt_segment "${color}" white "$(basename "${VIRTUAL_ENV}")"
+    __tty_ag_prompt_segment_left "${color}" default
+    __tty_ag_prompt_segment_left "${color}" white "$(basename "${VIRTUAL_ENV}")"
   fi
 }
 
@@ -366,14 +336,8 @@ __tty_ag_prompt_context() {
   local user
   user="$(whoami)"
   if [[ ${user} != "${DEFAULT_USER}" || -n ${SSH_CLIENT} ]]; then
-    __tty_ag_prompt_segment black default "${user}@\h"
+    __tty_ag_prompt_segment_left black default "${user}@\h"
   fi
-}
-
-# prints history followed by HH:MM, useful for remembering what
-# we did previously
-__tty_ag_prompt_histdt() {
-  __tty_ag_prompt_segment black default "\! (\A)"
 }
 
 __tty_ag_git_status_dirty() {
@@ -403,11 +367,11 @@ __tty_ag_prompt_git() {
       ref="➦ $(git describe --exact-match --tags HEAD 2>/dev/null || true )" ||
       ref="➦ $(git show-ref --head -s --abbrev | head -n1 2>/dev/null || true)"
     if [[ -n ${dirty} ]]; then
-      __tty_ag_prompt_segment yellow black
+      __tty_ag_prompt_segment_left yellow black
     else
-      __tty_ag_prompt_segment green black
+      __tty_ag_prompt_segment_left green black
     fi
-    PR="${PR}${ref/refs\/heads\// }${stash}${dirty}"
+    PS1L="${PS1L}${ref/refs\/heads\// }${stash}${dirty}"
   fi
 }
 
@@ -418,52 +382,91 @@ __tty_ag_prompt_hg() {
     if hg prompt >/dev/null 2>&1; then
       if [[ $(hg prompt "{status|unknown}" || true) == "?" ]]; then
         # if files are not added
-        __tty_ag_prompt_segment red white
+        __tty_ag_prompt_segment_left red white
         st='±'
       elif [[ -n $(hg prompt "{status|modified}" || true) ]]; then
         # if any modification
-        __tty_ag_prompt_segment yellow black
+        __tty_ag_prompt_segment_left yellow black
         st='±'
       else
         # if working copy is clean
-        __tty_ag_prompt_segment green black "${CURRENT_BG}"
+        __tty_ag_prompt_segment_left green black "${CURRENT_LBG}"
       fi
-      PR="${PR}$(hg prompt "☿ {rev}@{branch}") ${st}"
+      PS1L="${PS1L}$(hg prompt "☿ {rev}@{branch}") ${st}"
     else
       st=""
       rev=$(hg id -n 2>/dev/null | sed 's/[^-0-9]//g' || true)
       branch=$(hg id -b 2>/dev/null)
       if hg st | grep -q "^\?" || true ; then
-        __tty_ag_prompt_segment red white
+        __tty_ag_prompt_segment_left red white
         st='±'
       elif hg st | grep -q "^[MA]" || true ; then
-        __tty_ag_prompt_segment yellow black
+        __tty_ag_prompt_segment_left yellow black
         st='±'
       else
-        __tty_ag_prompt_segment green black "${CURRENT_BG}"
+        __tty_ag_prompt_segment_left green black "${CURRENT_LBG}"
       fi
-      PR="${PR}☿ ${rev}@${branch} ${st}"
+      PS1L="${PS1L}☿ ${rev}@${branch} ${st}"
     fi
   fi
 }
 
-_LINE=1
+__TTY_AG_LINE=1
 
 __tty_ag_prompt_line() {
-  __tty_ag_prompt_segment black orange "║ ${_LINE} ║"
-  _LINE=$((_LINE + 1))
+  __tty_ag_prompt_segment_left black orange "║ ${__TTY_AG_LINE} ║"
+  __TTY_AG_LINE=$((__TTY_AG_LINE + 1))
 }
+
+#Capturing start time in milliseconds
+__TTY_AG_SECOND="$(date '+%s%3N')"
+
+__tty_ag_prompt_seconds() {
+  local -i second
+  second="$(date '+%s%3N')"
+  ms_diff=$(( second - __TTY_AG_SECOND ))
+  sec_diff=$(( ms_diff / 1000 ))
+  ms_part=$(( ms_diff % 1000 ))
+  __tty_ag_prompt_segment_left black orange "|${sec_diff}.${ms_part}|"
+  __TTY_AG_SECOND="${second}"
+}
+
+
+# prints history followed by HH:MM, useful for remembering what
+# we did previously
+__tty_ag_prompt_histdt() {
+  history -a
+  history -c
+  history -r
+  __tty_ag_prompt_segment_left black default "\! (\A)"
+}
+
+
+__tty_ag_prompt_time() {
+  local _dt
+  _dt=$(date '+%H┋%M┋%S')
+  __tty_ag_prompt_segment_left black darkgray "${_dt}"
+}
+
 
 __tty_ag_prompt_date() {
   local _dt
-  _dt=$(date +%H┋%M┋%S)
-  __tty_ag_prompt_segment black darkgray " ${_dt}"
+  _dt=$(date '+%Y-%m-%d_%H-%M-%S-%N')
+  __tty_ag_prompt_segment_right black darkgray "${_dt}"
 }
 
 # Dir: current working directory
 __tty_ag_prompt_dir() {
-  __tty_ag_prompt_segment darkcyan darkgray '\w'
+  __tty_ag_prompt_segment_left darkcyan darkgray '\w'
 }
+
+
+# Dir: current working directory
+__tty_ag_prompt_full_pwd() {
+  __tty_ag_prompt_segment_right black darkgray "#|${PWD}|"
+}
+
+
 
 # Status:
 # - was there an error
@@ -487,7 +490,7 @@ __tty_ag_prompt_status() {
     symbols+=("$(__tty_ag_ansi_single "${cyan}")⚙")
   fi
   if [[ -n ${symbols[*]} ]]; then
-    __tty_ag_prompt_segment black default "${symbols}"
+    __tty_ag_prompt_segment_left black default "${symbols}"
   fi
   true
 }
@@ -495,111 +498,19 @@ __tty_ag_prompt_status() {
 ######################################################################
 #
 # experimental right prompt stuff
-# requires setting prompt_foo to use PRIGHT vs PR
+# requires setting prompt_foo to use PS1R vs PS1L
 # doesn't quite work per above
 
 __tty_ag_right_prompt() {
-  printf "%*s" "${COLUMNS}" "${PRIGHT}"
+  local ps1r="${1}"
+  ps1r_flat=$(echo -e "${ps1r}" | ansi2txt | col -b )
+  local -i len_diff=$(( ${#ps1r} - ${#ps1r_flat} ))
+  local -i line_len=$((COLUMNS + len_diff))
+  printf "%*s\r" "${line_len}" "${ps1r}"
+
 }
 
-# quick right prompt I grabbed to test things.
-__tty_ag_command_right_prompt() {
-  local times=" n=${COLUMNS} tz"
-  for tz in 'ZRH:Europe/Zurich' 'PIT:US/Eastern' \
-    'MTV:US/Pacific' 'TOK:Asia/Tokyo'; do
-    if [[ ${n} -le 40 ]]; then
-      break
-    fi
-    times="${times} ${tz%%:*}\e[30;1m:\e[0;36;1m"
-    times="${times}$(TZ=${tz#*:} date +%H:%M)\e[0m"
-    n=$((n - 10))
-  done
-  if [[ -n ${times} ]]; then
-    printf "%${n}s${times}\\r" ''
-  fi
-}
 
-# this doesn't wrap code in \[ \]
-__tty_ag_ansi_r() {
-  local seq
-  local -a codes=("${@}")
-
-  __tty_ag_debug "ansi:  all: ${*} aka ${codes[*]}"
-
-  seq=""
-  for ((i = 0; i < ${#codes[@]}; i++)); do
-    if [[ -n ${seq} ]]; then
-      seq="${seq};"
-    fi
-    seq="${seq}${codes[${i}]}"
-  done
-  __tty_ag_debug "ansi debug:" '\\[\\033['"${seq}"'m\\]'
-  echo -ne '\033['"${seq}"'m'
-  # PR="$PR\[\033[${seq}m\]"
-}
-
-# Begin a segment on the right
-# Takes two arguments, background and foreground. Both can be omitted,
-# rendering default background/foreground.
-__tty_ag_prompt_right_segment() {
-  local bg fg
-  local -a codes
-
-  __tty_ag_debug "Prompt right"
-  __tty_ag_debug "Prompting $1 $2 $3"
-
-  local te
-  te="$(__tty_ag_text_effect reset)"
-  codes=(
-    "${codes[@]}"
-    "${te}"
-  )
-  if [[ -n $1 ]]; then
-    bg=$(__tty_ag_bg_color "${1}")
-    codes=(
-      "${codes[@]}"
-      "${bg}"
-    )
-    __tty_ag_debug "Added ${bg} as background to codes"
-  fi
-  if [[ -n $2 ]]; then
-    fg=$(__tty_ag_fg_color "${2}")
-    codes=(
-      "${codes[@]}"
-      "${fg}"
-    )
-    __tty_ag_debug "Added ${fg} as foreground to codes"
-  fi
-
-  __tty_ag_debug "Right Codes: "
-  # declare -p codes
-
-  # right always has a separator
-  # if [[ $CURRENT_RBG != NONE && $1 != $CURRENT_RBG ]]; then
-  #     $CURRENT_RBG=
-  # fi
-  local -a intermediate=(
-    "$(__tty_ag_fg_color "${1}")"
-    "$(__tty_ag_bg_color "${CURRENT_RBG}")"
-  )
-  # PRIGHT="$PRIGHT---"
-  local pre_prompt
-  pre_prompt=$(__tty_ag_ansi_r "${intermediate[@]}")
-  __tty_ag_debug "pre prompt ${pre_prompt}"
-  PRIGHT="${PRIGHT}${pre_prompt}${RIGHT_SEPARATOR}"
-  local post_prompt
-  post_prompt=$(__tty_ag_ansi_r "${codes[@]}")
-  __tty_ag_debug "post prompt ${post_prompt}"
-  PRIGHT="${PRIGHT}${post_prompt} "
-  # else
-  #     __tty_ag_debug "no current BG, codes is $codes[@]"
-  #     PRIGHT="$PRIGHT$(__tty_ag_ansi codes[@]) "
-  # fi
-  CURRENT_RBG=${1}
-  if [[ -n ${3} ]]; then
-    PRIGHT="${PRIGHT}${3}"
-  fi
-}
 
 ######################################################################
 ## Emacs prompt --- for dir tracking
@@ -620,7 +531,7 @@ __tty_ag_prompt_right_segment() {
 
 __tty_ag_prompt_emacsdir() {
   # no color or other setting... this will be deleted per above
-  PR="DIR \w DIR${PR}"
+  PS1L="DIR \w DIR${PS1L}"
 }
 
 ######################################################################
@@ -628,12 +539,19 @@ __tty_ag_prompt_emacsdir() {
 
 __tty_ag_build_prompt() {
   __tty_ag_prompt_line
+  __tty_ag_prompt_full_pwd
+  __tty_ag_prompt_seconds
+  __tty_ag_prompt_time
   __tty_ag_prompt_date
-  if [[ -n ${AG_EMACS_DIR+x} ]]; then
+  __tty_ag_prompt_histdt
+
+ if [[ -n ${AG_EMACS_DIR+x} ]]; then
     __tty_ag_prompt_emacsdir
   fi
   __tty_ag_prompt_status
   #[[ -z ${AG_NO_HIST+x} ]] && __tty_ag_prompt_histdt
+
+
   if [[ -z ${AG_NO_CONTEXT+x} ]]; then
     __tty_ag_prompt_context
   fi
@@ -645,18 +563,24 @@ __tty_ag_build_prompt() {
 }
 
 __tty_ag_set_bash_prompt() {
-  RETVAL=$?
-  PR=""
-  PRIGHT=""
-  CURRENT_BG=NONE
+  local RETVAL=$?
+  local PS1L=""
+  local PS1R=""
+  local CURRENT_LBG=NONE
+  local CURRENT_RBG=NONE
+
   local te
   te="$(__tty_ag_text_effect reset)"
-  PR="$(__tty_ag_ansi_single "${te}")"
+  PS1L="$(__tty_ag_ansi_single "${te}")"
+  PS1R="$(__tty_ag_ansi_single "${te}")"
+
   __tty_ag_build_prompt
 
-  # uncomment below to use right prompt
-  # PS1='\[$(tput sc; printf "%*s" $COLUMNS "$PRIGHT"; tput rc)\]'$PR
-  PS1="${PR}"
+  PS1L="\033]0;${PWD}\a${PS1L}"
+
+  #PS1="${PS1L}"
+  PS1="\[$(tput sc; __tty_ag_right_prompt "${PS1R}"; tput rc)\]${PS1L}"
+
 }
 
 __tty_ag_main "${@}"

@@ -1,18 +1,20 @@
 # tty-agnoster-bash
 Agnoster Theme for Bash that works at evil TTY (1-6). 
-A Powerline-inspired theme for BASH
+A Powerline-inspired theme for BASH.
+
 
 ![ScreenShot](tty-agnoster-bash.png)
 
 # Origins
 
 * ZSH Аgnoster's Theme 
-    *  https://gist.github.com/3712874
+  *  https://gist.github.com/3712874
 * Converted from ZSH theme _[by Kenny Root]_
-    *  https://gist.github.com/kruton/8345450
+  *  https://gist.github.com/kruton/8345450
 * As original see agnoster-bash _[by Erik Selberg]_
-    * https://github.com/speedenator/agnoster-bash
+  * https://github.com/speedenator/agnoster-bash
 * Converted for TTY by @w495
+  * https://github.com/w495/tty-agnoster-bash  
 
 
 Also See alternative `agnoster_bash` _[by H@di]_
@@ -38,9 +40,8 @@ then add the following to your .bashrc:
 
 ```bash
 
-export THEME=$HOME/.bash/themes/tty-agnoster-bash/agnoster.bash
+export THEME=$HOME/.bash/themes/tty-agnoster-bash/tty-agnoster.bash
 if [[ -f $THEME ]]; then
-    export DEFAULT_USER=`whoami`
-    source $THEME
+    source $THEME -u "$(whoami)" -s '🭬'
 fi
 ```
