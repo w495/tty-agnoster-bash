@@ -538,11 +538,12 @@ __tty_ag_prompt_emacsdir() {
 ## Main prompt
 
 __tty_ag_build_prompt() {
-  __tty_ag_prompt_line
   __tty_ag_prompt_full_pwd
+#  __tty_ag_prompt_date
+
+  __tty_ag_prompt_line
   __tty_ag_prompt_seconds
   __tty_ag_prompt_time
-  __tty_ag_prompt_date
   __tty_ag_prompt_histdt
 
  if [[ -n ${AG_EMACS_DIR+x} ]]; then
