@@ -9,51 +9,36 @@ __tty_ag_format() {
       echo "
 Usage: __tty_ag_format [OPTIONS] [TEXT]
 EXAMPLES:
-  > __tty_ag_format -b yellow -f RED -e DEL -t 'Some waring'
+  > __tty_ag_format -b -yellow -f -RED -e DEL -t 'Some waring'
   It gives you:
     $(__tty_ag_format -b YELLOW -f RED -e DEL -t 'Some waring')
 OPTIONS:
   -b — for background color in a lower or an UPPER case:
-    Works fine in tty1-6
-      * black    — $($1 -b black black);
-      * blue     — $($1 -b blue blue);
-      * cyan     — $($1 -b cyan cyan);
-      * gray     — $($1 -b gray gray);
-      * green    — $($1 -b green green);
-      * magenta  — $($1 -b magenta magenta);
-      * orange   — $($1 -b orange orange);
-      * red      — $($1 -b red red);
-      * white    — $($1 -b white white);
-      * yellow   — $($1 -b yellow yellow);
-      * +blue    — $($1 -b +blue darkblue or dark_blue);
-      * +cyan    — $($1 -b +cyan darkcyan or dark_cyan);
-      * +gray    — $($1 -b +gray darkgray or dark_gray);
-      * +green   — $($1 -b +green darkgreen or dark_green);
-      * +magenta — $($1 -b +magenta darkmagenta or dark_magenta);
-      * +red     — $($1 -b +red darkred or dark_red);
-    * any other interprets as empty color.
-  -f — for foreground color in a lower or an UPPER case:
-    * black    — $($1 -f black black);
-    * blue     — $($1 -f blue blue);
-    * cyan     — $($1 -f cyan cyan);
-    * gray     — $($1 -f gray gray);
-    * green    — $($1 -f green green);
-    * magenta  — $($1 -f magenta magenta);
-    * orange   — $($1 -f orange orange);
-    * red      — $($1 -f red red);
-    * white    — $($1 -f white white);
-    * yellow   — $($1 -f yellow yellow);
+    Dark CMYK
+      -c | c | dc | -6 | 6 | 36 | -cyan | cyan  — $($1 -b cyan cyan);
+      -magenta  — $($1 -b magenta magenta);
+      -yellow   — $($1 -b yellow yellow);
+      -black    — $($1 -b black black);
+    Dark RGB
+      -red      — $($1 -b red red);
+      -green    — $($1 -b green green);
+      -blue     — $($1 -b blue blue);
+      -white    — $($1 -b white white);
+    Bright CMYK
+      +cyan     — $($1 -b cyan cyan);
+      +magenta  — $($1 -b magenta magenta);
+      +yellow   — $($1 -b yellow yellow);
+      +black    — $($1 -b black black);
+    Bright RGB
+      +red      — $($1 -b red red);
+      +green    — $($1 -b green green);
+      +blue     — $($1 -b blue blue);
+      +white    — $($1 -b white white);
+    Any other interprets as empty color.
 
-    * +blue    — $($1 -f +blue darkblue or dark_blue);
-    * +cyan    — $($1 -f +cyan darkcyan or dark_cyan);
-    * +gray    — $($1 -f +gray darkgray or dark_gray);
-    * +green   — $($1 -f +green darkgreen or dark_green);
-    * +magenta — $($1 -f +magenta darkmagenta or dark_magenta);
-    * +red     — $($1 -f +red darkred or dark_red);
     * any other interprets as empty color.
 
   -e — for text effect
-
     * bold      — $($1 -e bold bold);
     * dim       — $($1 -e dim dim);
     * italic    — $($1 -e italic italic)
@@ -72,11 +57,10 @@ OPTIONS:
     __tty_ag_format_main() {
       local options
       local nm='__tty_ag_format'
-      local sh='p:c:b:f:e:'
-      local lg='pos:,bg:,fg:,te,'
+      local sh='p:c:b:f:e:x:t:h'
+      local lg='pos:,bg:,fg:,te:,help'
       options=$(getopt -n "${nm}" -o "${sh}" -l "${lg}" -- "${@}")
       eval set -- "${options}"
-      echo "${options}"
       local fg_name=""
       local bg_name=""
       local te_names=''
@@ -87,13 +71,22 @@ OPTIONS:
             __tty_ag_format_usage __tty_ag_format
             shift 1
             ;;
-          -p | --pos)
-            fg_name=$(__tty_ag_format_color_case "${2:0:1}")
-            bg_name=$(__tty_ag_format_color_case "${2:1:1}")
-            te_names="${2:2}"
-            # shellcheck disable=SC2001
-            te_names="$(echo "${te_names}" | sed 's/./& /g')"
-            echo "f=${fg_name} b=${bg_name} t=${te_names}"
+          -x | -p | --pos)
+            local arg="${2}"
+            if [[ ${arg} =~ [[:punct:]]  ]]; then
+              arg="${arg//[[:punct:]]/ }"
+              fg_name=$(echo "${arg}"   | cut -d' ' -f1   )
+              bg_name=$(echo "${arg}"   | cut -d' ' -f2   )
+              te_names=$(echo "${arg}"  | cut -d' ' -f3-  )
+            else
+              fg_name="${arg:0:1}"
+              bg_name="${arg:1:1}"
+              te_names="${arg:2}"
+              # shellcheck disable=SC2001
+              te_names=$(echo "${te_names}" | sed 's/./& /g')
+            fi
+            fg_name=$(__tty_ag_format_color_case "${fg_name}")
+            bg_name=$(__tty_ag_format_color_case "${bg_name}")
             shift 2
             ;;
           -c | -f | --fg)
@@ -105,15 +98,13 @@ OPTIONS:
             shift 2
             ;;
           -e | --te)
-            te_names="${te_names} ${2}"
+            local arg="${2//[[:punct:]]/ }"
+            te_names="${te_names} ${arg}"
             shift 2
             ;;
           -t | --text)
             text="${2}"
             shift 2
-            ;;
-          -+ )
-            shift 1
             ;;
           '--' | '')
             shift 1
@@ -208,28 +199,28 @@ OPTIONS:
       local -l color="${1}"
       color=$(__tty_ag_format_rename_color "${color}")
       case "${color}" in
-        -k | k | dk | -0 | 0 | 30 | -black | black)
+        -k | k | dk | -0 | 0 | 30 | -000 | -black | black)
           echo 30
           ;;
-        -r | r | dr | -1 | 1 | 31 |  -red | red)
+        -r | r | dr | -1 | 1 | 31 | -100 | -red | red)
           echo 31
           ;;
-        -g | g | dg | -2 | 2 | 32 | -green | green)
+        -g | g | dg | -2 | 2 | 32 | -010 | -green | green)
           echo 32
           ;;
-        -y | y | dy | -3 | 3 | 33 | -yellow | yellow)
+        -y | y | dy | -3 | 3 | 33 | -110 | -yellow | yellow)
           echo 33
           ;;
-        -b | b | db | -4 | 4 | 34 | -blue | blue)
+        -b | b | db | -4 | 4 | 34 | -001 | -blue | blue)
           echo 34
           ;;
-        -m | m | dm | -5 | 5 | 35 |  -magenta | magenta)
+        -m | m | dm | -5 | 5 | 35 | -101 | -magenta | magenta)
           echo 35
           ;;
-        -c | c | dc | -6 | 6 | 36 | -cyan | cyan )
+        -c | c | dc | -6 | 6 | 36 | -011 | -cyan | cyan )
           echo 36
           ;;
-        -w | w | dw | -7 | 7 | 37 | -white | white)
+        -w | w | dw | -7 | 7 | 37 | -111 | -white | white)
           echo 37
           ;;
         ## bright colors
