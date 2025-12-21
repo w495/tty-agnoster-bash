@@ -6,6 +6,9 @@ export SEGMENT_SEPARATOR='▒░'
 export RIGHT_SEPARATOR='▒░'
 export VERBOSE_MODE=false
 
+
+source "$(dirname "${BASH_SOURCE[0]}")/tty-agnoster-format.bash"
+
 __tty_ag_main() {
   local options
   local this="${BASH_SOURCE[0]}"
@@ -88,124 +91,125 @@ __tty_ag_text_effect() {
     echo 9
     ;;
   *)
-    echo 0
+    echo
     ;;
   esac
 }
 
 __tty_ag_fg_color() {
   case "$1" in
-  black)
-    echo 30
-    ;;
-  darkred)
-    echo 31
-    ;;
-  darkgreen)
-    echo 32
-    ;;
-  yellow)
-    echo 33
-    ;;
-  darkblue)
-    echo 34
-    ;;
-  darkmagenta)
-    echo 35
-    ;;
-  darkcyan)
-    echo 36
-    ;;
-  white)
-    echo 37
-    ;;
-  darkgray)
-    echo 90
-    ;;
-  red)
-    echo 91
-    ;;
-  green)
-    echo 92
-    ;;
-  orange)
-    echo 93
-    ;;
-  blue)
-    echo 94
-    ;;
-  magenta)
-    echo 95
-    ;;
-  cyan)
-    echo 96
-    ;;
-  gray)
-    echo 96
-    ;;
-  *)
-    echo 0
-    ;;
+    black)
+      echo 30
+      ;;
+    darkred)
+      echo 31
+      ;;
+    darkgreen)
+      echo 32
+      ;;
+    yellow)
+      echo 33
+      ;;
+    darkblue)
+      echo 34
+      ;;
+    darkmagenta)
+      echo 35
+      ;;
+    darkcyan)
+      echo 36
+      ;;
+    white)
+      echo 37
+      ;;
+    darkgray)
+      echo 90
+      ;;
+    red)
+      echo 91
+      ;;
+    green)
+      echo 92
+      ;;
+    orange)
+      echo 93
+      ;;
+    blue)
+      echo 94
+      ;;
+    magenta)
+      echo 95
+      ;;
+    cyan)
+      echo 96
+      ;;
+    gray)
+      echo 96
+      ;;
+    *)
+      echo
+      ;;
   esac
 }
 
 __tty_ag_bg_color() {
   case "$1" in
-  black)
-    echo 40
-    ;;
-  darkred)
-    echo 41
-    ;;
-  darkgreen)
-    echo 42
-    ;;
-  yellow)
-    echo 43
-    ;;
-  darkblue)
-    echo 44
-    ;;
-  darkmagenta)
-    echo 45
-    ;;
-  darkcyan)
-    echo 46
-    ;;
-  white)
-    echo 47
-    ;;
-  darkgray)
-    echo 100
-    ;;
-  red)
-    echo 101
-    ;;
-  green)
-    echo 102
-    ;;
-  orange)
-    echo 103
-    ;;
-  blue)
-    echo 104
-    ;;
-  magenta)
-    echo 105
-    ;;
-  cyan)
-    echo 106
-    ;;
-  gray)
-    echo 107
-    ;;
-  *)
-    echo 0
-    ;;
+    black)
+      echo 40
+      ;;
+    darkred)
+      echo 41
+      ;;
+    darkgreen)
+      echo 42
+      ;;
+    yellow)
+      echo 43
+      ;;
+    darkblue)
+      echo 44
+      ;;
+    darkmagenta)
+      echo 45
+      ;;
+    darkcyan)
+      echo 46
+      ;;
+    white)
+      echo 47
+      ;;
+    darkgray)
+      echo 100
+      ;;
+    red)
+      echo 101
+      ;;
+    green)
+      echo 102
+      ;;
+    orange)
+      echo 103
+      ;;
+    blue)
+      echo 104
+      ;;
+    magenta)
+      echo 105
+      ;;
+    cyan)
+      echo 106
+      ;;
+    gray)
+      echo 107
+      ;;
+    *)
+      echo
+      ;;
   esac
 }
 
-__tty_ag_format() {
+
+__tty_ag_format_heads() {
   local -a codes=("${@}")
   __tty_ag_debug "format: ${codes[*]}"
   local seq=''
@@ -216,11 +220,11 @@ __tty_ag_format() {
     seq="${seq}${codes[${i}]}"
   done
   __tty_ag_debug "\\033['${seq}'m"
-  echo -ne "\033[${seq}m"
+  echo -ne "\[\e[${seq}m\]"
 }
 
-__tty_ag_ansi_single() {
-  echo -ne "\033[${1}m"
+__tty_ag_format_head() {
+  echo -ne "\[\e[${1}m\]"
 }
 
 # Begin a segment
@@ -262,14 +266,14 @@ __tty_ag_segment() {
       "$(__tty_ag_bg_color "${bg_name}")"
     )
     local pre_prompt
-    pre_prompt=$(__tty_ag_format "${intermediate[@]}")
+    pre_prompt=$(__tty_ag_format_heads "${intermediate[@]}")
     __tty_ag_debug "pre prompt ${pre_prompt}"
     prompt="${prompt}${pre_prompt}${SEGMENT_SEPARATOR}"
   else
     __tty_ag_debug "no current BG, codes is ${codes[*]}"
   fi
   local post_prompt
-  post_prompt=$(__tty_ag_format "${codes[@]}")
+  post_prompt=$(__tty_ag_format_heads "${codes[@]}")
   __tty_ag_debug "post prompt ${post_prompt}"
   prompt="${prompt}${post_prompt}"
   if [[ -n ${text} ]]; then
@@ -302,13 +306,13 @@ __tty_ag_prompt_end() {
       "$(__tty_ag_text_effect reset)"
       "$(__tty_ag_fg_color "${CURRENT_LBG}")"
     )
-    PS1L="${PS1L}$(__tty_ag_format "${codes[@]}")${SEGMENT_SEPARATOR}"
+    PS1L="${PS1L}$(__tty_ag_format_heads "${codes[@]}")${SEGMENT_SEPARATOR}"
   fi
   local -a reset=(
     "$(__tty_ag_text_effect reset)"
   )
   local reset_format
-  reset_format=$(__tty_ag_format "${reset[@]}")
+  reset_format=$(__tty_ag_format_heads "${reset[@]}")
 
   PS1L="${PS1L}${reset_format}"
   PS1R="${PS1R}${reset_format}"
@@ -481,13 +485,13 @@ __tty_ag_prompt_status() {
 
   symbols=()
   if [[ ${RETVAL} -ne 0 ]]; then
-    symbols+=("$(__tty_ag_ansi_single "${red}")✘")
+    symbols+=("$(__tty_ag_format_head "${red}")✘")
   fi
   if [[ ${UID} -eq 0 ]]; then
-    symbols+=("$(__tty_ag_ansi_single "${yellow}")⚡")
+    symbols+=("$(__tty_ag_format_head "${yellow}")⚡")
   fi
   if [[ $(jobs -l | wc -l || true) -gt 0 ]]; then
-    symbols+=("$(__tty_ag_ansi_single "${cyan}")⚙")
+    symbols+=("$(__tty_ag_format_head "${cyan}")⚙")
   fi
   if [[ -n ${symbols[*]} ]]; then
     __tty_ag_prompt_segment_left black default "${symbols}"
@@ -539,7 +543,7 @@ __tty_ag_prompt_emacsdir() {
 
 __tty_ag_build_prompt() {
   __tty_ag_prompt_full_pwd
-#  __tty_ag_prompt_date
+  __tty_ag_prompt_date
 
   __tty_ag_prompt_line
   __tty_ag_prompt_seconds
@@ -572,15 +576,17 @@ __tty_ag_set_bash_prompt() {
 
   local te
   te="$(__tty_ag_text_effect reset)"
-  PS1L="$(__tty_ag_ansi_single "${te}")"
-  PS1R="$(__tty_ag_ansi_single "${te}")"
+  PS1L="$(__tty_ag_format_head "${te}")"
+  PS1R="$(__tty_ag_format_head "${te}")"
 
   __tty_ag_build_prompt
 
+#
+
+  PS1="${PS1L}"
+  #PS1="\[$(tput sc; __tty_ag_right_prompt "${PS1R}"; tput rc)\]${PS1L}"
   PS1L="\033]0;${PWD}\a${PS1L}"
 
-  #PS1="${PS1L}"
-  PS1="\[$(tput sc; __tty_ag_right_prompt "${PS1R}"; tput rc)\]${PS1L}"
 
 }
 
