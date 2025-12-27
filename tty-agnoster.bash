@@ -7,7 +7,7 @@ export RIGHT_SEPARATOR='▒░'
 export VERBOSE_MODE=false
 
 
-source "$(dirname "${BASH_SOURCE[0]}")/tty-agnoster-format.bash"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/tty-ag-echo.bash"
 
 __tty_ag_main() {
   local options
@@ -220,11 +220,11 @@ __tty_ag_format_heads() {
     seq="${seq}${codes[${i}]}"
   done
   __tty_ag_debug "\\033['${seq}'m"
-  echo -ne "\[\e[${seq}m\]"
+  echo -ne "\e[${seq}m"
 }
 
 __tty_ag_format_head() {
-  echo -ne "\[\e[${1}m\]"
+  echo -ne "\e[${1}m"
 }
 
 # Begin a segment
@@ -359,6 +359,29 @@ __tty_ag_git_stash_dirty() {
     echo ' ⚑'
   fi
 }
+
+
+__tty_ag_prompt_arc() {
+  local ref dirty
+  if arc root &> /dev/null ; then
+    local branch
+    branch=$(arc info --json)
+    branch=$(echo "${branch}" | jq -r '.branch')
+
+    local dirty dirty_flag
+    dirty=$(arc status --json | jq '.status | length')
+
+    if [[ ${dirty} == 0 ]]; then
+      dirty_flag=' <->'
+      __tty_ag_prompt_segment_left green black
+    else
+      dirty_flag=' <+>'
+      __tty_ag_prompt_segment_left yellow black
+    fi
+      PS1L="${PS1L} ${branch} ${dirty_flag}"
+  fi
+}
+
 
 # Git: branch/detached head, dirty status
 __tty_ag_prompt_git() {
@@ -506,14 +529,14 @@ __tty_ag_prompt_status() {
 # doesn't quite work per above
 
 __tty_ag_right_prompt() {
+  tput sc;
   local ps1r="${1}"
-  ps1r_flat=$(echo -e "${ps1r}" | ansi2txt | col -b )
+  ps1r_flat=$(echo -en "${ps1r}" | ansi2txt | sed 's/\\\[\\\]//gi' )
   local -i len_diff=$(( ${#ps1r} - ${#ps1r_flat} ))
   local -i line_len=$((COLUMNS + len_diff))
-  printf "%*s\r" "${line_len}" "${ps1r}"
-
+  printf "%*s\r\n" "${line_len}" "${ps1r}"
+  tput rc;
 }
-
 
 
 ######################################################################
@@ -562,9 +585,89 @@ __tty_ag_build_prompt() {
   fi
   __tty_ag_prompt_virtualenv
   __tty_ag_prompt_dir
+  __tty_ag_prompt_arc
   __tty_ag_prompt_git
   __tty_ag_prompt_hg
   __tty_ag_prompt_end
+}
+
+
+__tty_ag_bottom_window () {
+    tput sc
+    # Create a virtual window that is two lines smaller at the bottom.
+    tput csr 0 $(( LINES-4 ))
+    # Move cursor to last line in your screen
+    tput cup $(( LINES-2 )) 0;
+    printf '~%.0s' $(seq 1 $COLUMNS); echo
+    echo "${1}"
+    # Move cursor to home position, back in virtual window
+    tput rc
+}
+
+
+__tty_ag_right_window () {
+    tput init
+    tput sc
+
+    local value="${1}"
+    value_flat=$(echo -en "${value}" | ansi2txt )
+    local -i len_diff=$(( ${#value} - ${#value_flat} ))
+    local -i line_len=$((COLUMNS -  ${#value_flat}))
+
+    row=$(__tty_ag_cursor_row)
+    # Create a virtual window that is two lines smaller at the bottom.
+    tput csr ${line_len} $((row - 1))
+    # Move cursor to last line in your screen
+    tput cup $((row - 1)) $(( line_len));
+    echo -en "${value}\r\n"
+    # Move cursor to home position, back in virtual window
+    tput rc
+}
+
+
+__tty_ag_cursor_row() {
+  local row col
+  IFS=';' read -p $'\e[6n' -d R -rs row col \
+  || echo "failed with error: $? ; ${row} ${col} "
+  row="${row:2}"
+  echo "${row}"
+}
+
+
+
+#
+#__tty_ag_top_window () {
+#    tput sc
+#    local ps1r="${1}"
+#    ps1r_flat=$(echo -en "${ps1r}" | ansi2txt | col -b )
+#    local -i len_diff=$(( ${#ps1r} - ${#ps1r_flat} ))
+#
+#    local -i line_len=$((COLUMNS - ${#ps1r} ))
+#    tput csr "${line_len}" 0
+#    tput cup 0 "${line_len}";
+#    printf "|%s|" "XXX"
+#    # Move cursor to home position, back in virtual window
+#    tput rc
+#}
+
+
+fork_spinner(){
+  local -r fun="${1}"
+  eval "${fun}" & 2> /dev/null
+  local -r pid=$! # Process Id of the previous running command
+  local -ra spin=(
+    " - "
+    " \ "
+    " | "
+    " / "
+  )
+  local i=0
+  while kill -0 "${pid}" 2>/dev/null
+  do
+    i=$(( (i+1) %4 ))
+    echo -en "\r${spin[${i}]}"
+    sleep .1
+  done
 }
 
 __tty_ag_set_bash_prompt() {
@@ -579,13 +682,25 @@ __tty_ag_set_bash_prompt() {
   PS1L="$(__tty_ag_format_head "${te}")"
   PS1R="$(__tty_ag_format_head "${te}")"
 
+  # rename console tab
+#  echo >&2 -en "\001\033]0;${PWD}\a\002\n"
+
+
   __tty_ag_build_prompt
 
-#
 
   PS1="${PS1L}"
-  #PS1="\[$(tput sc; __tty_ag_right_prompt "${PS1R}"; tput rc)\]${PS1L}"
-  PS1L="\033]0;${PWD}\a${PS1L}"
+
+#  PS1="\001$(__tty_ag_right_window "${PS1R}")\002${PS1}"
+#  PS1="\001[$(__tty_ag_bottom_window "${PS1R}")\002${PS1}"
+#
+#  __tty_ag_right_window "${PS1R}"
+
+  # PS1='\[\e[$LINES;1H\]'$PS1
+
+
+
+
 
 
 }
