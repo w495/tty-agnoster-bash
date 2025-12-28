@@ -2,6 +2,7 @@
 Agnoster Theme for Bash that works at evil TTY (1-6). 
 A Powerline-inspired theme for BASH.
 
+https://wiki.archlinux.org/title/User:Grufo/Color_System's_Bash_Prompt
 
 ![ScreenShot](tty-agnoster-bash.png)
 

@@ -2,6 +2,8 @@
 # shellcheck enable=all
 # shfmt -ci -i 2 -sr -s -bn -ln posix -d
 
+
+
 __tty_ag_echo() {
     __tty_ag_echo_usage() {
       # shellcheck disable=SC2312
@@ -59,193 +61,206 @@ OPTIONS:
 EOF
     }
 
-    __tty_ag_echo_all() (
-      local -l set="${1}"
-      local fun="${2}"
-      for en in ${set}; do
-        res=$(eval "${fun}" "${en}")
-        echo "${res}"
+    __tty_ag_echo_te_code_seq() (
+      local te_name_seq="${1}"
+      for te_name in ${te_name_seq}; do
+        local -i res
+        res=$(__tty_ag_echo_te_code "${te_name}")
+        printf '%d' "${res}"
       done
     )
 
-    __tty_ag_echo_text_effect() {
+    __tty_ag_echo_te_code() {
       local -l effect="${1}"
       case "${effect}" in
         0 | n | clear | reset)
-          echo 0
+          printf '%d' 0
           ;;
         1 | b | bold)
-          echo 1
+          printf '%d' 1
           ;;
         2 | d | f | dim | faint)
-          echo 2
+          printf '%d' 2
           ;;
         3 | i | italic)
-          echo 3
+          printf '%d' 3
           ;;
         4 | u | underline)
-          echo 4
+          printf '%d' 4
           ;;
         5 | l | blink )
-          echo 5
+          printf '%d' 5
           ;;
         7 | r | reverse)
-          echo 7
+          printf '%d' 7
           ;;
         8 | c | conceal)
-          echo 8
+          printf '%d'  8
           ;;
         9 | s | x | Strikethrough | strikeout | del)
-          echo 9
+          printf '%d'  9
+          ;;
+        '')
+          printf '%d' -1
           ;;
         *)
-          echo ''
+          printf '%d' -2
           ;;
       esac
     }
 
-    __tty_ag_echo_color_case() (
+    __tty_ag_echo_color_code_case() (
       case ${1} in
-        ([[:lower:]]) echo "-${1}";;
-        ([[:upper:]]) echo "+${1}";;
-        (*) echo "${1}";;
+        ([[:lower:]]) printf '%s' "-${1}";;
+        ([[:upper:]]) printf '%s' "+${1}";;
+        (*) printf '%s' "${1}";;
       esac
     )
 
     __tty_ag_echo_rename_color() {
-      local -l color="${1}"
+      local -l color_name="${1}"
       local -l cl=''
       cl="cyan|magenta|yellow|black|red|green|blue|white"
       cl="${cl}|c|m|y|k|r|g|b|w"
       patten="
-          s/^((d|dark)(\W|_)?)(${cl})$/-\4/gi;
-          s/^((b|bright)(\W|_)?)(${cl})?$/+\4/gi;
-          s/^((l|light)(\W|_)?)(${cl})?$/+\4/gi;
-          s/^(${cl})((\W|_)?(d|dark))$/-\1/gi;
-          s/^(${cl})((\W|_)?(b|bright))$/+\1/gi;
-          s/^(${cl})((\W|_)?(l|light))$/+\1/gi;
+          s/^((d|dark|ba|basic)(\W|_)?)(${cl})$/-\4/gi;
+          s/^((i|l|light|br|bright)(\W|_)?)(${cl})?$/+\4/gi;
+          s/^(${cl})((\W|_)?(d|dark|ba|basic))$/-\1/gi;
+          s/^(${cl})((\W|_)?(i|l|light|b|br|bright))$/+\1/gi;
         "
-      echo "${color}" | sed -re "${patten}"
+      printf '%s' "${color_name}" | sed -re "${patten}"
     }
 
-    __tty_ag_echo_color() {
+    __tty_ag_echo_color_code() {
       local -l color="${1}"
-      color=$(__tty_ag_echo_rename_color "${color}")
-      case "${color}" in
-        -k | k | -0 | 0 | 30 | 40 | -000 | -black | black)
-          echo 30:40
+      local -l renamed_color
+      renamed_color=$(__tty_ag_echo_rename_color "${color}")
+      case "${renamed_color}" in
+        ?(-)k | ?(-)0 | 30 | 40 | ?(-)rgb:000 | ?(-)black)
+          printf '%d,%d'  30 40
           ;;
-        -r | r | -1 | 1 | 31 | 41 | -100 | -red | red)
-          echo 31:41
+        ?(-)r | ?(-)1 | 31 | 41 | ?(-)rgb:100 | ?(-)red)
+          printf '%d,%d' 31 41
           ;;
-        -g | g | -2 | 2 | 32 | 42 | -010 | -green | green)
-          echo 32:42
+        ?(-)g | ?(-)2 | 32 | 42 | ?(-)rgb:010 | ?(-)green)
+          printf '%d,%d' 32 42
           ;;
-        -y | y | -3 | 3 | 33 | 43 | -110 | -yellow | yellow)
-          echo 33:43
+        ?(-)y | ?(-)3 | 33 | 43 | ?(-)rgb:110 | ?(-)yellow)
+          printf '%d,%d'  33 43
           ;;
-        -b | b | -4 | 4 | 34 | 44 | -001 | -blue | blue)
-          echo 34:44
+        ?(-)b | ?(-)4 | 34 | 44 | ?(-)rgb:001 | ?(-)blue)
+          printf '%d,%d'  34 44
           ;;
-        -m | m | -5 | 5 | 35 | 45 | -101 | -magenta | magenta)
-          echo 35:45
+        ?(-)m | ?(-)5 | 35 | 45 | ?(-)rgb:101 | ?(-)magenta)
+          printf '%d,%d'  35 45
           ;;
-        -c | c | -6 | 6 | 36 | 46 | -011 | -cyan | cyan )
-          echo 36:46
+        ?(-)c | ?(-)6 | 36 | 46 | ?(-)rgb:011 | ?(-)cyan)
+          printf '%d,%d'  36 46
           ;;
-        -w | w | -7 | 7 | 37 | 47 | -111 | -white | white)
-          echo 37:47
+        ?(-)w | ?(-)7 | 37 | 47 | ?(-)rgb:111 | ?(-)white)
+          printf '%d,%d'  37 47
           ;;
         ## bright colors
-        +k | +0 | 90 | +black | gray)
+        +k | +0 | 90 | 100 | +rgb:000 | +black | gray)
           # bright black
-          echo 90:100
+          printf '%d,%d' 90 100
           ;;
-        +r | +1 | 91 | +red)
+        +r | +1 | 91 | 101 | +rgb:100 | +red)
           # bright red
-          echo 91:101
+          printf '%d,%d' 91 101
           ;;
-        +g | +2 | 92 | +green)
+        +g | +2 | 92 | 102 | +rgb:010 | +green)
           # bright green
-          echo 92:102
+          printf '%d,%d' 92 102
           ;;
-        +y | +3 | 93 | +yellow)
+        +y | +3 | 93 | 103 | +rgb:110 | +yellow)
           # bright yellow
-          echo 93:103
+          printf '%d,%d' 93 103
           ;;
-        +b | +4 | 94 | +blue)
+        +b | +4 | 94 | 104 | +rgb:001 | +blue)
           # bright blue
-          echo 94:104
+          printf '%d,%d' 94 104
           ;;
-        +m | +5 | 95 | +magenta)
+        +m | +5 | 95 | 105 | +rgb:101 | +magenta)
           # bright magenta
-          echo 95:105
+          printf '%d,%d' 95 105
           ;;
-        +c | +6 | 96 | +cyan)
+        +c | +6 | 96 | 106 | +rgb:011 | +cyan)
           # bright cyan
-          echo 96:106
+          printf '%d,%d' 96 106
           ;;
-        +w | +7 | 97 | +white)
+        +w | +7 | 97 | 107 | +rgb:111 | +white)
           # bright white
-          echo 97:107
+          printf '%d,%d' 97 107
+          ;;
+        '')
+          printf '%d,%d' -1 -1
           ;;
         *)
-          echo "${color}:${color}"
+          printf >&2 "\e[31mError unknow color '%s' \e[0m\n" "${color}"
+          printf '%d,%d' -2 -2
           ;;
       esac
     }
-    __tty_ag_echo_fg() {
-      local -l color="${1}"
-      color=$(__tty_ag_echo_color "${1}")
-      color="${color%:*}"
-      echo "${color}"
+    __tty_ag_echo_fg_code() {
+      local color_code
+      color_code=$(__tty_ag_echo_color_code "${1}")
+      local -i fg_code="${color_code%,*}"
+      echo "${fg_code}"
     }
 
-    __tty_ag_echo_bg() {
-      local -l color="${1}"
-      color=$(__tty_ag_echo_color "${1}")
-      color="${color#*:}"
-      echo "${color}"
+    __tty_ag_echo_bg_code() {
+      local color_code
+      color_code=$(__tty_ag_echo_color_code "${1}")
+      local -i bg_code="${color_code#*,}"
+      echo "${bg_code}"
     }
 
-    __tty_ag_echo_iter_codes() {
-      local fg_code="${1}"
-      local bg_code="${2}"
-      local ef_codes="${3}"
-      local seq=''
-      for code in "${fg_code}" "${bg_code}" ${ef_codes}; do
+    __tty_ag_echo_filter_code_seq() {
+      local code_seq="${1}"
+      for code in ${code_seq}; do
+        if [[ "${code}" -le 0 ]]; then continue; fi
         if [[ -z ${code} ]]; then continue; fi
-        if [[ -n ${seq} ]]; then seq="${seq};"; fi
-        seq="${seq}${code}"
+        printf '%d ' "${code}"
       done
-      echo "${seq}"
     }
 
-    __tty_ag_echo_codes() {
+    __tty_ag_echo_join_code_seq() {
+      local code_seq="${1}"
+      local code_str=''
+      for code in ${code_seq}; do
+        if [[ -n ${code_str} ]]; then
+          code_str="${code_str};";
+        fi
+        code_str="${code_str}${code}"
+      done
+      printf '%s' "${code_str}"
+    }
+
+    __tty_ag_echo_code_str() {
       local fg_name="${1}"
-      local bg_name="${1}"
-      local te_names="${2}"
+      local bg_name="${2}"
+      local te_name_seq="${3}"
       local fg_code
+      fg_code=$(__tty_ag_echo_fg_code "${fg_name}")
       local bg_code
-      local ef_codes
-      fg_code=$(__tty_ag_echo_fg "${fg_name}")
-      bg_code=$(__tty_ag_echo_bg "${bg_name}")
-      ef_codes=$(
-        __tty_ag_echo_all "${te_names}" __tty_ag_echo_text_effect
-      )
-      local seq=''
-      seq=$(
-        __tty_ag_echo_iter_codes "${fg_code}" "${bg_code}" "${ef_codes}"
-      )
+      bg_code=$(__tty_ag_echo_bg_code "${bg_name}")
+      local te_code_seq
+      te_code_seq=$(__tty_ag_echo_te_code_seq "${te_name_seq}")
+      local code_seq="${fg_code} ${bg_code} ${te_code_seq}"
+      code_seq=$(__tty_ag_echo_filter_code_seq "${code_seq}")
+      local code_str
+      code_str=$(__tty_ag_echo_join_code_seq "${code_seq}")
+      echo "${code_str}"
     }
 
     __tty_ag_echo_head() {
       local fg_name="${1}"
-      local bg_name="${1}"
-      local te_names="${2}"
+      local bg_name="${2}"
+      local te_name_seq="${3}"
       local seq=''
       seq=$(
-        __tty_ag_echo_codes "${fg_name}" "${bg_name}" "${te_names}"
+        __tty_ag_echo_code_str "${fg_name}" "${bg_name}" "${te_name_seq}"
       )
       local head="\x01\e[${seq}m\x02"
       echo "${head}"
@@ -253,7 +268,7 @@ EOF
 
     __tty_ag_echo_tail() {
       local reset_code
-      reset_code=$(__tty_ag_echo_text_effect reset)
+      reset_code=$(__tty_ag_echo_te_code reset)
       local tail="\x01\e[${reset_code}m\x02"
       echo "${tail}"
     }
@@ -261,13 +276,13 @@ EOF
     __tty_ag_echo_main() {
       local options
       local nm='__tty_ag_echo'
-      local sh='p:c:b:f:e:x:t:a'
+      local sh='p:c:b:f:e:x:t:ad'
       local lg='pos:,bg:,fg:,te:,help,auto'
       options=$(getopt -n "${nm}" -o "${sh}" -l "${lg}" -- "${@}")
       eval set -- "${options}"
       local fg_name=""
       local bg_name=""
-      local te_names=''
+      local te_name_seq=''
       local text=""
       local detect_colors=false
       while [[ -n ${options} ]]; do
@@ -283,19 +298,24 @@ EOF
           -x | -p | --pos)
             local arg="${2}"
             if [[ ${arg} =~ [[:punct:]]  ]]; then
-              arg="${arg//[[:punct:]]/ }"
+              # shellcheck disable=SC2001
+              # posix
+              arg="$(echo "${arg}" | sed 's/[[:punct:]]/ /')"
               fg_name=$(echo "${arg}"   | cut -d' ' -f1   )
               bg_name=$(echo "${arg}"   | cut -d' ' -f2   )
-              te_names=$(echo "${arg}"  | cut -d' ' -f3-  )
+              te_name_seq=$(echo "${arg}"  | cut -d' ' -f3-  )
             else
               fg_name="${arg:0:1}"
               bg_name="${arg:1:1}"
-              te_names="${arg:2}"
+              te_name_seq="${arg:2}"
               # shellcheck disable=SC2001
-              te_names=$(echo "${te_names}" | sed 's/./& /g')
+              # complex substitution
+              # split every char with spaces
+              te_name_seq=$(echo "${te_name_seq}" | sed 's/./& /g')
+
             fi
-            fg_name=$(__tty_ag_echo_color_case "${fg_name}")
-            bg_name=$(__tty_ag_echo_color_case "${bg_name}")
+            fg_name=$(__tty_ag_echo_color_code_case "${fg_name}")
+            bg_name=$(__tty_ag_echo_color_code_case "${bg_name}")
             shift 2
             ;;
           -c | -f | --fg)
@@ -308,7 +328,7 @@ EOF
             ;;
           -e | --te)
             local arg="${2//[[:punct:]]/ }"
-            te_names="${te_names} ${arg}"
+            te_name_seq="${te_name_seq} ${arg}"
             shift 2
             ;;
           -t | --text)
@@ -330,35 +350,34 @@ EOF
 
       local head
       head=$(
-        __tty_ag_echo_head "${fg_name}" "${bg_name}" "${te_names}"
+        __tty_ag_echo_head "${fg_name}" "${bg_name}" "${te_name_seq}"
       )
 
       local tail
       tail=$(
-        __tty_ag_echo_tail "${fg_name}" "${bg_name}" "${te_names}"
+        __tty_ag_echo_tail "${fg_name}" "${bg_name}" "${te_name_seq}"
       )
 
       local result
       if ${detect_colors}; then
         if [[ $- =~ i  ]] && [[ -t 1  ]]; then
           result="${head}${text}${tail}"
-        esle
+        else
           result="${text}"
         fi
       else
         result="${head}${text}${tail}"
       fi
-      echo "${result}"
+      printf '%b\n' "${result}"
     }
-
 
     __tty_ag_echo_main "$@"
 
     unset __tty_ag_echo_all
-    unset __tty_ag_echo_color_case
+    unset __tty_ag_echo_color_code_case
     unset __tty_ag_echo_main
-    unset __tty_ag_echo_text_effect
-    unset __tty_ag_echo_bg
-    unset __tty_ag_echo_fg
+    unset __tty_ag_echo_te_code
+    unset __tty_ag_echo_bg_code
+    unset __tty_ag_echo_fg_code
     unset __tty_ag_echo_usage
 }
