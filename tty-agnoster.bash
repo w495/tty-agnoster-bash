@@ -219,12 +219,12 @@ __tty_ag_format_heads() {
     fi
     seq="${seq}${codes[${i}]}"
   done
-  __tty_ag_debug "\\033['${seq}'m"
-  echo -ne "\e[${seq}m"
+  __tty_ag_debug "\\e['${seq}'m"
+  echo -ne "\0001\e[${seq}m\0002"
 }
 
 __tty_ag_format_head() {
-  echo -ne "\e[${1}m"
+  echo -ne "\0001\e[${1}m\0002"
 }
 
 # Begin a segment
@@ -705,4 +705,4 @@ __tty_ag_set_bash_prompt() {
 
 }
 
-__tty_ag_main "${@}"
+#__tty_ag_main "${@}"
