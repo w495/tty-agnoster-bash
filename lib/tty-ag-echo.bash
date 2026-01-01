@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck enable=all
+# shellcheck enable=all disable=SC2317
 
 # COMPATIBILITY NOTE:
 # ---------------------------------------------------------------
@@ -11,16 +11,25 @@
 #     shfmt -ci -i 2 -sr -s -bn -kp -ln posix -d
 # ---------------------------------------------------------------
 
-__tty_ag_echo() {
-  __tty_ag_echo_usage() {
+__noster_theme_zecho_lib() {
+
+  __noster_theme_zecho_usage() {
     # shellcheck disable=SC2312
-      cat << EOF
-Usage: __tty_ag_echo [OPTIONS] [TEXT]
+    cat <<EOF
+Usage: __noster_theme_zecho [OPTIONS] [TEXT]
+
+NAME:
+  «Colourful Echo» —> «C. Echo» —> «cecho». It sounds like /see‑EK‑oh/
+  in English. But in Latin it sounds like /tse‑kho/, that is similar to
+    * German «Zeche» — /tseh‑uhn/ — colliery;
+    * Russian «Цех»  — /tsekh/    — workshop.
+  So we use «Z» to represent /ts/-sound.
+
 EXAMPLES:
-  > __tty_ag_echo -b -yellow -f -RED -e DEL -t 'Some waring'
+  > __noster_theme_zecho -b -yellow -f -RED -e DEL -t 'Some waring'
   It gives you:
-    $(__tty_ag_echo -b YELLOW -f RED -e DEL -t 'Some waring')
-OPTIONS:
+    $(__noster_theme_zecho -b YELLOW -f RED -e DEL -t 'Some waring')
+  OPTIONS:
   -b — for background color in a lower or an UPPER case.
   -b — for background color in a lower or an UPPER case.
 
@@ -66,11 +75,11 @@ EOF
 
   }
 
-  typeset __TTY_AG_ECHO_FMT_SEP=':'
-  typeset __TTY_AG_ECHO_POS_SEP=':'
-  typeset __TTY_AG_ECHO_ESC_ANSI_SEP=';'
+  typeset __noster_theme_zecho_FMT_SEP=':'
+  typeset __noster_theme_zecho_POS_SEP=':'
+  typeset __noster_theme_zecho_ESC_ANSI_SEP=';'
 
-  __tty_ag_echo_te_code() {
+  __noster_theme_zecho_te_code() {
     typeset -l effect="${1}"
     case "${effect}" in
       0 | n |     clear |     reset)    echo 0 ;;
@@ -87,20 +96,20 @@ EOF
     esac
   }
 
-  __tty_ag_echo_te_code_seq() {
+  __noster_theme_zecho_te_code_seq() {
     typeset te_name_seq="${1}"
     typeset te_code_seq=''
     OLD_IFS="${IFS}"
-    IFS="${__TTY_AG_ECHO_FMT_SEP}"
+    IFS="${__noster_theme_zecho_FMT_SEP}"
     # shellcheck disable=SC2116
     for te_name in $(echo "${te_name_seq}"); do
       typeset -i te_code
-      te_code=$(__tty_ag_echo_te_code "${te_name}")
+      te_code=$(__noster_theme_zecho_te_code "${te_name}")
       if [[ -z ${te_code} ]]; then continue; fi
       if [[ ${te_code} == '-1'   ]]; then continue; fi
       if [[ ${te_code} == '-2'   ]]; then continue; fi
       if [[ -n ${te_code_seq} ]]; then
-        te_code_seq="${te_code_seq}${__TTY_AG_ECHO_FMT_SEP}"
+        te_code_seq="${te_code_seq}${__noster_theme_zecho_FMT_SEP}"
       fi
       te_code_seq="${te_code_seq}${te_code}"
     done
@@ -108,7 +117,7 @@ EOF
     echo "${te_code_seq}"
   }
 
-  __tty_ag_echo_color_code_case() {
+  __noster_theme_zecho_color_code_case() {
     case ${1} in
       [[:lower:]]) echo "-${1}" ;;
       [[:upper:]]) echo "+${1}" ;;
@@ -116,7 +125,7 @@ EOF
     esac
   }
 
-  __tty_ag_echo_rename_color() {
+  __noster_theme_zecho_rename_color() {
     typeset -l color_name="${1}"
     typeset -l cl=''
     cl="cyan|magenta|yellow|black|red|green|blue|white"
@@ -130,10 +139,10 @@ EOF
     echo "${color_name}" | sed -re "${patten}"
   }
 
-  __tty_ag_echo_color_std_name() {
+  __noster_theme_zecho_color_std_name() {
     typeset -l color="${1}"
     typeset -l renamed_color
-    renamed_color=$(__tty_ag_echo_rename_color "${color}")
+    renamed_color=$(__noster_theme_zecho_rename_color "${color}")
     case "${renamed_color}" in
       -k | k | -0 | 0 | 30 | 40 | rgb-000 | -black | black)
         echo 'basic black'
@@ -194,7 +203,7 @@ EOF
     esac
   }
 
-  __tty_ag_echo_color_code_pair() {
+  __noster_theme_zecho_color_code_pair() {
     typeset color_std_name="${1}"
     case "${color_std_name}" in
       'basic black')    echo 30 40  ;;
@@ -219,21 +228,21 @@ EOF
     esac
   }
 
-  __tty_ag_echo_fg_code() {
+  __noster_theme_zecho_fg_code() {
     typeset code_pair
-    code_pair=$(__tty_ag_echo_color_code_pair "${1}")
+    code_pair=$(__noster_theme_zecho_color_code_pair "${1}")
     typeset -i fg_code="${code_pair%\ *}"
     echo "${fg_code}"
   }
 
-  __tty_ag_echo_bg_code() {
+  __noster_theme_zecho_bg_code() {
     typeset code_pair
-    code_pair=$(__tty_ag_echo_color_code_pair "${1}")
+    code_pair=$(__noster_theme_zecho_color_code_pair "${1}")
     typeset -i bg_code="${code_pair#*\ }"
     echo "${bg_code}"
   }
 
-  __tty_ag_echo_join_code_seq() {
+  __noster_theme_zecho_join_code_seq() {
     typeset code_seq="${1}"
     typeset code_str=''
 
@@ -244,12 +253,12 @@ EOF
     #    pipe="$(mktemp -u)"
     #    mkfifo "${pipe}"
     #    echo "${code_seq}" > "${pipe}" &
-    #    while read -rd "${__TTY_AG_ECHO_FMT_SEP}" code; do
+    #    while read -rd "${__noster_theme_zecho_FMT_SEP}" code; do
     #      if [[ -z ${code} ]]; then continue; fi
     #      if [[ "${code}" == '-1' ]]; then continue; fi
     #      if [[ "${code}" == '-2' ]]; then continue; fi
     #      if [[ -n ${code_str} ]]; then
-    #        code_str="${code_str}${__TTY_AG_ECHO_ESC_ANSI_SEP}"
+    #        code_str="${code_str}${__noster_theme_zecho_ESC_ANSI_SEP}"
     #      fi
     #      code_str="${code_str}${code}"
     #    done < "${pipe}"
@@ -257,7 +266,7 @@ EOF
     # ---------------------------------------------------------------
 
     OLD_IFS="${IFS}"
-    IFS="${__TTY_AG_ECHO_FMT_SEP}"
+    IFS="${__noster_theme_zecho_FMT_SEP}"
     # shellcheck disable=SC2116
     #   use $(echo "${code_seq}") for zsh
     for code in $(echo "${code_seq}"); do
@@ -265,7 +274,7 @@ EOF
       if [[ ${code} == '-1'   ]]; then continue; fi
       if [[ ${code} == '-2'   ]]; then continue; fi
       if [[ -n ${code_str} ]]; then
-        code_str="${code_str}${__TTY_AG_ECHO_ESC_ANSI_SEP}"
+        code_str="${code_str}${__noster_theme_zecho_ESC_ANSI_SEP}"
       fi
       code_str="${code_str}${code}"
     done
@@ -274,7 +283,7 @@ EOF
     echo "${code_str}"
   }
 
-  __tty_ag_echo_code_str() {
+  __noster_theme_zecho_code_str() {
     typeset fg_name="${1}"
     typeset bg_name="${2}"
     typeset te_name_seq="${3}"
@@ -282,32 +291,32 @@ EOF
     typeset te_code_seq=''
     if [[ -n ${fg_name} ]]; then
       typeset fg_std_name=''
-      fg_std_name=$(__tty_ag_echo_color_std_name "${fg_name}")
-      fg_code=$(__tty_ag_echo_fg_code "${fg_std_name}")
+      fg_std_name=$(__noster_theme_zecho_color_std_name "${fg_name}")
+      fg_code=$(__noster_theme_zecho_fg_code "${fg_std_name}")
     fi
     if [[ -n ${bg_name} ]]; then
       typeset bg_std_name=''
-      bg_std_name=$(__tty_ag_echo_color_std_name "${bg_name}")
-      bg_code=$(__tty_ag_echo_bg_code "${bg_std_name}")
+      bg_std_name=$(__noster_theme_zecho_color_std_name "${bg_name}")
+      bg_code=$(__noster_theme_zecho_bg_code "${bg_std_name}")
     fi
     if [[ -n ${te_name_seq} ]]; then
-      te_code_seq=$(__tty_ag_echo_te_code_seq "${te_name_seq}")
+      te_code_seq=$(__noster_theme_zecho_te_code_seq "${te_name_seq}")
     fi
-    typeset s="${__TTY_AG_ECHO_FMT_SEP}"
+    typeset s="${__noster_theme_zecho_FMT_SEP}"
     typeset code_seq="${fg_code}${s}${bg_code}${s}${te_code_seq}"
-    #    code_seq=$(__tty_ag_echo_filter_code_seq "${code_seq}")
+    #    code_seq=$(__noster_theme_zecho_filter_code_seq "${code_seq}")
     typeset code_str
-    code_str=$(__tty_ag_echo_join_code_seq "${code_seq}")
+    code_str=$(__noster_theme_zecho_join_code_seq "${code_seq}")
     echo "${code_str}"
   }
 
-  __tty_ag_echo_head() {
+  __noster_theme_zecho_head() {
     typeset fg_name="${1}"
     typeset bg_name="${2}"
     typeset te_name_seq="${3}"
     typeset seq=''
     seq=$(
-      __tty_ag_echo_code_str "${fg_name}" "${bg_name}" "${te_name_seq}"
+      __noster_theme_zecho_code_str "${fg_name}" "${bg_name}" "${te_name_seq}"
     )
 
     # COMPATIBILITY NOTE:
@@ -324,9 +333,9 @@ EOF
     echo "${head}"
   }
 
-  __tty_ag_echo_tail() {
+  __noster_theme_zecho_tail() {
     typeset reset_code
-    reset_code=$(__tty_ag_echo_te_code reset)
+    reset_code=$(__noster_theme_zecho_te_code reset)
 
     # COMPATIBILITY NOTE:
     # ---------------------------------------------------------------
@@ -342,10 +351,10 @@ EOF
     echo "${tail}"
   }
 
-  __tty_ag_echo_parse_te_name_seq()  {
+  __noster_theme_zecho_parse_te_name_seq() {
     typeset te_name_seq="${1}"
     typeset arg="${2}"
-    typeset fs="${__TTY_AG_ECHO_FMT_SEP}"
+    typeset fs="${__noster_theme_zecho_FMT_SEP}"
     typeset std_arg
 
     # COMPATIBILITY NOTE:
@@ -359,15 +368,15 @@ EOF
 
     std_arg="${arg//[[:punct:]]/${fs}}"
     if [[ -n ${te_name_seq} ]]; then
-      te_name_seq="${te_name_seq}${__TTY_AG_ECHO_FMT_SEP}"
+      te_name_seq="${te_name_seq}${__noster_theme_zecho_FMT_SEP}"
     fi
     te_name_seq="${te_name_seq}${std_arg}"
     echo "${te_name_seq}"
   }
 
-  __tty_ag_echo_parse_positional()  {
+  __noster_theme_zecho_parse_positional() {
     typeset arg="${1}"
-    typeset fs="${__TTY_AG_ECHO_FMT_SEP}"
+    typeset fs="${__noster_theme_zecho_FMT_SEP}"
     typeset fg_name
     typeset bg_name
     typeset te_name_seq
@@ -386,9 +395,9 @@ EOF
       # shellcheck disable=SC2001
       std_arg="${arg//[[:punct:]]/${fs}}"
       fg_name="${arg%%"${fs}"*}"
-                                  arg="${arg#*"${fs}"}"
+      arg="${arg#*"${fs}"}"
       bg_name="${arg%%"${fs}"*}"
-                                  arg="${arg#*"${fs}"}"
+      arg="${arg#*"${fs}"}"
       te_name_seq="${arg}"
     else
 
@@ -414,17 +423,17 @@ EOF
       #   split every char with ${fs}
       te_name_seq=$(echo "${te_name_seq}" | sed "s/./&${fs}/g")
     fi
-    fg_name=$(__tty_ag_echo_color_code_case "${fg_name}")
-    bg_name=$(__tty_ag_echo_color_code_case "${bg_name}")
+    fg_name=$(__noster_theme_zecho_color_code_case "${fg_name}")
+    bg_name=$(__noster_theme_zecho_color_code_case "${bg_name}")
 
-    typeset ps="${__TTY_AG_ECHO_POS_SEP}"
+    typeset ps="${__noster_theme_zecho_POS_SEP}"
     pos_res="${fg_name}${ps}${bg_name}${ps}${te_name_seq}"
     echo "${pos_res}"
   }
 
-  __tty_ag_echo_main() {
+  __noster_theme_zecho_do() {
     typeset options
-    typeset nm='__tty_ag_echo'
+    typeset nm='__noster_theme_zecho'
     typeset sh='p:c:b:f:e:x:t:adh'
     typeset lg='pos:,bg:,fg:,te:,help,auto'
     options=$(getopt -n "${nm}" -o "${sh}" -l "${lg}" -- "${@}")
@@ -438,7 +447,7 @@ EOF
     while [[ -n ${options} ]]; do
       case ${1} in
         -h)
-          __tty_ag_echo_usage __tty_ag_echo
+          __noster_theme_zecho_usage __noster_theme_zecho_do
           shift 1
           ;;
         -a | --auto)
@@ -447,13 +456,13 @@ EOF
           ;;
         -x | -p | --pos)
           typeset pos_arg_seq
-          pos_arg_seq=$(__tty_ag_echo_parse_positional "${2}")
-          fg_name="${pos_arg_seq%%"${__TTY_AG_ECHO_POS_SEP}"*}"
+          pos_arg_seq=$(__noster_theme_zecho_parse_positional "${2}")
+          fg_name="${pos_arg_seq%%"${__noster_theme_zecho_POS_SEP}"*}"
           # rest
-          pos_arg_seq="${pos_arg_seq#*"${__TTY_AG_ECHO_POS_SEP}"}"
-          bg_name="${pos_arg_seq%%"${__TTY_AG_ECHO_POS_SEP}"*}"
+          pos_arg_seq="${pos_arg_seq#*"${__noster_theme_zecho_POS_SEP}"}"
+          bg_name="${pos_arg_seq%%"${__noster_theme_zecho_POS_SEP}"*}"
           # rest
-          te_name_seq="${pos_arg_seq#*"${__TTY_AG_ECHO_POS_SEP}"}"
+          te_name_seq="${pos_arg_seq#*"${__noster_theme_zecho_POS_SEP}"}"
           shift 2
           ;;
         -c | -f | --fg)
@@ -466,7 +475,7 @@ EOF
           ;;
         -e | --te)
           te_name_seq=$(
-            __tty_ag_echo_parse_te_name_seq "${te_name_seq}" "${2}"
+            __noster_theme_zecho_parse_te_name_seq "${te_name_seq}" "${2}"
           )
           shift 2
           ;;
@@ -487,11 +496,11 @@ EOF
     text="${text}${*}"
     typeset head
     head=$(
-      __tty_ag_echo_head "${fg_name}" "${bg_name}" "${te_name_seq}"
+      __noster_theme_zecho_head "${fg_name}" "${bg_name}" "${te_name_seq}"
     )
     typeset tail
     tail=$(
-      __tty_ag_echo_tail "${fg_name}" "${bg_name}" "${te_name_seq}"
+      __noster_theme_zecho_tail "${fg_name}" "${bg_name}" "${te_name_seq}"
     )
     typeset result
     if ${detect_colors}; then
@@ -506,30 +515,37 @@ EOF
 
     printf '%b\n' "${result}"
   }
+}
 
-  __tty_ag_echo_main "${@}"
+
+__noster_theme_zecho() {
+  __noster_theme_zecho_lib && __noster_theme_zecho_do "${@}"
+
+  unset __noster_theme_zecho_FMT_SEP=':'
+  unset __noster_theme_zecho_POS_SEP=':'
+  unset __noster_theme_zecho_ESC_ANSI_SEP=';'
 
   # grep '()' | sed -re 's/\s+(.*)\(\) \{/unset \1/gi'
-  unset __tty_ag_echo_usage
-  unset __tty_ag_echo_te_code_seq
-  unset __tty_ag_echo_te_code
-  unset __tty_ag_echo_color_code_case
-  unset __tty_ag_echo_rename_color
-  unset __tty_ag_echo_color_std_name
-  unset __tty_ag_echo_color_code_pair
-  unset __tty_ag_echo_fg_code
-  unset __tty_ag_echo_bg_code
-  unset __tty_ag_echo_join_code_seq
-  unset __tty_ag_echo_code_str
-  unset __tty_ag_echo_head
-  unset __tty_ag_echo_tail
-  unset __tty_ag_echo_main
+  unset __noster_theme_zecho_usage
+  unset __noster_theme_zecho_te_code
+  unset __noster_theme_zecho_te_code_seq
+  unset __noster_theme_zecho_color_code_case
+  unset __noster_theme_zecho_rename_color
+  unset __noster_theme_zecho_color_std_name
+  unset __noster_theme_zecho_color_code_pair
+  unset __noster_theme_zecho_fg_code
+  unset __noster_theme_zecho_bg_code
+  unset __noster_theme_zecho_join_code_seq
+  unset __noster_theme_zecho_code_str
+  unset __noster_theme_zecho_head
+  unset __noster_theme_zecho_tail
+  unset __noster_theme_zecho_parse_te_name_seq
+  unset __noster_theme_zecho_parse_positional
+  unset __noster_theme_zecho_do
+  unset __col_echo_do
 
 }
 
-__tty_ag_echo "${@}"
-
-#
-#if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-#  __tty_ag_echo "${@}"
-#fi
+__noster_theme_zecho_subshell() (
+  __noster_theme_zecho_lib && __noster_theme_zecho_do "${@}"
+)
