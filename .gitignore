@@ -1,6 +1,7 @@
 # certain dirs #
 ################
 .dotfiles
+.idea
 
 # Backup files#
 ###############
@@ -52,16 +53,8 @@ Thumbs.db
 #########
 # MacOS #
 #########
-.DS_Store
 .AppleDouble
 .LSOverride
-
-# Thumbnails
-._*
-
-# Files that might appear on external disk
-.Spotlight-V100
-.Trashes
 
 # Directories potentially created on remote AFP share
 .AppleDB
@@ -88,7 +81,6 @@ id_rsa
 *.un~
 Session.vim
 .netrwhist
-*~
 
 #########
 # Maven #
@@ -104,8 +96,6 @@ release.properties
 ########
 # Node #
 ########
-# Logs
-*.log
 
 # Runtime data
 pids
