@@ -13,7 +13,7 @@
 
 
 __tty_ag_echo_lib() (
-  source ./tty-ag-echo.lib.bash
+  source ./noster-theme-zecho.lib.bash
   __tty_ag_echo "${@}"
 
   # grep '()' | sed -re 's/\s+(.*)\(\) \{/unset \1/gi'

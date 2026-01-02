@@ -11,6 +11,10 @@
 #     shfmt -ci -i 2 -sr -s -bn -kp -ln posix -d
 # ---------------------------------------------------------------
 
+typeset __NOSTER_THEME_ZECHO_FMT_SEP=':'
+typeset __NOSTER_THEME_ZECHO_POS_SEP=':'
+typeset __NOSTER_THEME_ZECHO_ESC_ANSI_SEP=';'
+
 __noster_theme_zecho_lib() {
 
   __noster_theme_zecho_usage() {
@@ -75,9 +79,8 @@ EOF
 
   }
 
-  typeset __noster_theme_zecho_FMT_SEP=':'
-  typeset __noster_theme_zecho_POS_SEP=':'
-  typeset __noster_theme_zecho_ESC_ANSI_SEP=';'
+
+
 
   __noster_theme_zecho_te_code() {
     typeset -l effect="${1}"
@@ -98,22 +101,36 @@ EOF
 
   __noster_theme_zecho_te_code_seq() {
     typeset te_name_seq="${1}"
+    typeset fmt_sep="${__NOSTER_THEME_ZECHO_FMT_SEP}"
     typeset te_code_seq=''
-    OLD_IFS="${IFS}"
-    IFS="${__noster_theme_zecho_FMT_SEP}"
-    # shellcheck disable=SC2116
-    for te_name in $(echo "${te_name_seq}"); do
+    te_name_seq="${te_name_seq}${fmt_sep}"
+    while [[ "${te_name_seq#*"${fmt_sep}"}" != "${te_name_seq}" ]]; do
+      typeset te_name="${te_name_seq%%"${fmt_sep}"*}"
       typeset -i te_code
       te_code=$(__noster_theme_zecho_te_code "${te_name}")
-      if [[ -z ${te_code} ]]; then continue; fi
-      if [[ ${te_code} == '-1'   ]]; then continue; fi
-      if [[ ${te_code} == '-2'   ]]; then continue; fi
-      if [[ -n ${te_code_seq} ]]; then
-        te_code_seq="${te_code_seq}${__noster_theme_zecho_FMT_SEP}"
+      if [[ ${te_code} != '-1' ]] && [[ ${te_code} != '-2' ]]; then
+        if [[ -n ${te_code_seq} ]]; then
+          te_code_seq="${te_code_seq}${fmt_sep}"
+        fi
+        te_code_seq="${te_code_seq}${te_code}"
       fi
-      te_code_seq="${te_code_seq}${te_code}"
+      te_name_seq="${te_name_seq#*"${fmt_sep}"}"
     done
-    IFS="${OLD_IFS}"
+    #    OLD_IFS="${IFS}"
+    #    IFS="${fmt_sep}"
+    #    # shellcheck disable=SC2116
+    #    for te_name in $(echo "${te_name_seq}"); do
+    #      typeset -i te_code
+    #      te_code=$(__noster_theme_zecho_te_code "${te_name}")
+    #      if [[ -z ${te_code} ]]; then continue; fi
+    #      if [[ ${te_code} == '-1' ]]; then continue; fi
+    #      if [[ ${te_code} == '-2' ]]; then continue; fi
+    #      if [[ -n ${te_code_seq} ]]; then
+    #        te_code_seq="${te_code_seq}${fmt_sep}"
+    #      fi
+    #      te_code_seq="${te_code_seq}${te_code}"
+    #    done
+    #    IFS="${OLD_IFS}"
     echo "${te_code_seq}"
   }
 
@@ -244,6 +261,9 @@ EOF
 
   __noster_theme_zecho_join_code_seq() {
     typeset code_seq="${1}"
+    typeset ansi_sep="${__NOSTER_THEME_ZECHO_ESC_ANSI_SEP}"
+    typeset fmt_sep="${__NOSTER_THEME_ZECHO_FMT_SEP}"
+
     typeset code_str=''
 
     # COMPATIBILITY NOTE:
@@ -253,32 +273,44 @@ EOF
     #    pipe="$(mktemp -u)"
     #    mkfifo "${pipe}"
     #    echo "${code_seq}" > "${pipe}" &
-    #    while read -rd "${__noster_theme_zecho_FMT_SEP}" code; do
+    #    while read -rd "${fmt_sep}" code; do
     #      if [[ -z ${code} ]]; then continue; fi
     #      if [[ "${code}" == '-1' ]]; then continue; fi
     #      if [[ "${code}" == '-2' ]]; then continue; fi
     #      if [[ -n ${code_str} ]]; then
-    #        code_str="${code_str}${__noster_theme_zecho_ESC_ANSI_SEP}"
+    #        code_str="${code_str}${ansi_sep}"
     #      fi
     #      code_str="${code_str}${code}"
     #    done < "${pipe}"
     #    rm "${pipe}"
     # ---------------------------------------------------------------
+    #
+    #    OLD_IFS="${IFS}"
+    #    IFS="${fmt_sep}"
+    #    # shellcheck disable=SC2116
+    #    #   use $(echo "${code_seq}") for zsh
+    #    for code in $(echo "${code_seq}"); do
+    #      if [[ -z ${code} ]]; then continue; fi
+    #      if [[ ${code} == '-1'   ]]; then continue; fi
+    #      if [[ ${code} == '-2'   ]]; then continue; fi
+    #      if [[ -n ${code_str} ]]; then
+    #        code_str="${code_str}${ansi_sep}"
+    #      fi
+    #      code_str="${code_str}${code}"
+    #    done
+    #    IFS="${OLD_IFS}"
 
-    OLD_IFS="${IFS}"
-    IFS="${__noster_theme_zecho_FMT_SEP}"
-    # shellcheck disable=SC2116
-    #   use $(echo "${code_seq}") for zsh
-    for code in $(echo "${code_seq}"); do
-      if [[ -z ${code} ]]; then continue; fi
-      if [[ ${code} == '-1'   ]]; then continue; fi
-      if [[ ${code} == '-2'   ]]; then continue; fi
-      if [[ -n ${code_str} ]]; then
-        code_str="${code_str}${__noster_theme_zecho_ESC_ANSI_SEP}"
+    code_seq="${code_seq}${fmt_sep}"
+    while [[ "${code_seq#*"${fmt_sep}"}" != "${code_seq}" ]]; do
+      typeset code="${code_seq%%"${fmt_sep}"*}"
+      if [[ "${code}" != '-1' ]] && [[ "${code}" != '-2' ]]; then
+        if [[ -n ${code_str} ]]; then
+          code_str="${code_str}${ansi_sep}"
+        fi
+        code_str="${code_str}${code}"
       fi
-      code_str="${code_str}${code}"
+      code_seq="${code_seq#*"${fmt_sep}"}"
     done
-    IFS="${OLD_IFS}"
 
     echo "${code_str}"
   }
@@ -287,26 +319,34 @@ EOF
     typeset fg_name="${1}"
     typeset bg_name="${2}"
     typeset te_name_seq="${3}"
-    typeset -i fg_code=-1 bg_code=-1
-    typeset te_code_seq=''
-    if [[ -n ${fg_name} ]]; then
+    typeset fmt_sep="${__NOSTER_THEME_ZECHO_FMT_SEP}"
+
+    typeset code_seq
+    if [[ -n "${fg_name}" ]]; then
       typeset fg_std_name=''
       fg_std_name=$(__noster_theme_zecho_color_std_name "${fg_name}")
+      typeset -i fg_code=-1
       fg_code=$(__noster_theme_zecho_fg_code "${fg_std_name}")
+      code_seq="${fg_code}"
     fi
-    if [[ -n ${bg_name} ]]; then
+    if [[ -n "${bg_name}" ]]; then
       typeset bg_std_name=''
       bg_std_name=$(__noster_theme_zecho_color_std_name "${bg_name}")
+      typeset -i bg_code=-1
       bg_code=$(__noster_theme_zecho_bg_code "${bg_std_name}")
+      code_seq="${code_seq}${fmt_sep}${bg_code}"
     fi
-    if [[ -n ${te_name_seq} ]]; then
-      te_code_seq=$(__noster_theme_zecho_te_code_seq "${te_name_seq}")
+    if [[ -n "${te_name_seq}" ]]; then
+      typeset te_code_seq
+      te_code_seq=$(
+        __noster_theme_zecho_te_code_seq "${te_name_seq}"
+      )
+      code_seq="${code_seq}${fmt_sep}${te_code_seq}"
     fi
-    typeset s="${__noster_theme_zecho_FMT_SEP}"
-    typeset code_seq="${fg_code}${s}${bg_code}${s}${te_code_seq}"
-    #    code_seq=$(__noster_theme_zecho_filter_code_seq "${code_seq}")
     typeset code_str
-    code_str=$(__noster_theme_zecho_join_code_seq "${code_seq}")
+    code_str=$(
+      __noster_theme_zecho_join_code_seq "${code_seq}"
+    )
     echo "${code_str}"
   }
 
@@ -354,21 +394,21 @@ EOF
   __noster_theme_zecho_parse_te_name_seq() {
     typeset te_name_seq="${1}"
     typeset arg="${2}"
-    typeset fs="${__noster_theme_zecho_FMT_SEP}"
+    typeset fmt_sep="${__NOSTER_THEME_ZECHO_FMT_SEP}"
     typeset std_arg
 
     # COMPATIBILITY NOTE:
     # ---------------------------------------------------------------
     #   bash/zsh/ksh93:
-    #     std_arg="${arg//[[:punct:]]/${fs}}"
+    #     std_arg="${arg//[[:punct:]]/${fmt_sep}}"
     #   posix:
     #     # shellcheck disable=SC2001
-    #     std_arg=$(echo "${arg}" | sed "s/[[:punct:]]/${fs}/")
+    #     std_arg=$(echo "${arg}" | sed "s/[[:punct:]]/${fmt_sep}/")
     # ---------------------------------------------------------------
 
-    std_arg="${arg//[[:punct:]]/${fs}}"
+    std_arg="${arg//[[:punct:]]/${fmt_sep}}"
     if [[ -n ${te_name_seq} ]]; then
-      te_name_seq="${te_name_seq}${__noster_theme_zecho_FMT_SEP}"
+      te_name_seq="${te_name_seq}${fmt_sep}"
     fi
     te_name_seq="${te_name_seq}${std_arg}"
     echo "${te_name_seq}"
@@ -376,7 +416,8 @@ EOF
 
   __noster_theme_zecho_parse_positional() {
     typeset arg="${1}"
-    typeset fs="${__noster_theme_zecho_FMT_SEP}"
+    typeset fmt_sep="${__NOSTER_THEME_ZECHO_FMT_SEP}"
+    typeset pos_sep="${__NOSTER_THEME_ZECHO_POS_SEP}"
     typeset fg_name
     typeset bg_name
     typeset te_name_seq
@@ -386,18 +427,19 @@ EOF
       # COMPATIBILITY NOTE:
       # ---------------------------------------------------------
       #   bash/zsh/ksh93:
-      #     std_arg="${arg//[[:punct:]]/${fs}}"
+      #     std_arg="${arg//[[:punct:]]/${fmt_sep}}"
       #   posix:
       #     # shellcheck disable=SC2001
-      #     std_arg=$(echo "${arg}" | sed "s/[[:punct:]]/${fs}/g")
+      #     std_arg=$(echo "${arg}" | sed "s/[[:punct:]]/${fmt_sep}/g")
       # ---------------------------------------------------------
 
       # shellcheck disable=SC2001
-      std_arg="${arg//[[:punct:]]/${fs}}"
-      fg_name="${arg%%"${fs}"*}"
-      arg="${arg#*"${fs}"}"
-      bg_name="${arg%%"${fs}"*}"
-      arg="${arg#*"${fs}"}"
+      std_arg="${arg//[[:punct:]]/${fmt_sep}}"
+
+      fg_name="${arg%%"${fmt_sep}"*}"
+      arg="${arg#*"${fmt_sep}"}"
+      bg_name="${arg%%"${fmt_sep}"*}"
+      arg="${arg#*"${fmt_sep}"}"
       te_name_seq="${arg}"
     else
 
@@ -420,14 +462,14 @@ EOF
       # shellcheck disable=SC2001
       #   bash=5.1.16
       #   complex substitution:
-      #   split every char with ${fs}
-      te_name_seq=$(echo "${te_name_seq}" | sed "s/./&${fs}/g")
+      #   split every char with ${fmt_sep}
+      te_name_seq=$(echo "${te_name_seq}" | sed "s/./&${fmt_sep}/g")
     fi
     fg_name=$(__noster_theme_zecho_color_code_case "${fg_name}")
     bg_name=$(__noster_theme_zecho_color_code_case "${bg_name}")
 
-    typeset ps="${__noster_theme_zecho_POS_SEP}"
-    pos_res="${fg_name}${ps}${bg_name}${ps}${te_name_seq}"
+    typeset _P_="${pos_sep}"
+    pos_res="${fg_name}${_P_}${bg_name}${_P_}${te_name_seq}"
     echo "${pos_res}"
   }
 
@@ -456,13 +498,14 @@ EOF
           ;;
         -x | -p | --pos)
           typeset pos_arg_seq
+          typeset pos_sep="${__NOSTER_THEME_ZECHO_POS_SEP}"
           pos_arg_seq=$(__noster_theme_zecho_parse_positional "${2}")
-          fg_name="${pos_arg_seq%%"${__noster_theme_zecho_POS_SEP}"*}"
+          fg_name="${pos_arg_seq%%"${pos_sep}"*}"
           # rest
-          pos_arg_seq="${pos_arg_seq#*"${__noster_theme_zecho_POS_SEP}"}"
-          bg_name="${pos_arg_seq%%"${__noster_theme_zecho_POS_SEP}"*}"
+          pos_arg_seq="${pos_arg_seq#*"${pos_sep}"}"
+          bg_name="${pos_arg_seq%%"${pos_sep}"*}"
           # rest
-          te_name_seq="${pos_arg_seq#*"${__noster_theme_zecho_POS_SEP}"}"
+          te_name_seq="${pos_arg_seq#*"${pos_sep}"}"
           shift 2
           ;;
         -c | -f | --fg)
@@ -512,18 +555,15 @@ EOF
     else
       result="${head}${text}${tail}"
     fi
-
     printf '%b\n' "${result}"
   }
 }
 
 
 __noster_theme_zecho() {
-  __noster_theme_zecho_lib && __noster_theme_zecho_do "${@}"
+  __noster_theme_zecho_lib
 
-  unset __noster_theme_zecho_FMT_SEP=':'
-  unset __noster_theme_zecho_POS_SEP=':'
-  unset __noster_theme_zecho_ESC_ANSI_SEP=';'
+  __noster_theme_zecho_do "${@}"
 
   # grep '()' | sed -re 's/\s+(.*)\(\) \{/unset \1/gi'
   unset __noster_theme_zecho_usage
@@ -542,10 +582,19 @@ __noster_theme_zecho() {
   unset __noster_theme_zecho_parse_te_name_seq
   unset __noster_theme_zecho_parse_positional
   unset __noster_theme_zecho_do
-  unset __col_echo_do
 
 }
 
-__noster_theme_zecho_subshell() (
-  __noster_theme_zecho_lib && __noster_theme_zecho_do "${@}"
+
+
+
+__noster_theme_zecho__subshell__overload_example() (
+  __noster_theme_zecho_lib
+
+  __noster_theme_zecho_usage() {
+    echo "Overload example. the main function is $1"
+  }
+
+  __noster_theme_zecho_do "${@}"
+
 )
