@@ -12,6 +12,7 @@
 # ---------------------------------------------------------------
 
 typeset __NOSTER_THEME_ZECHO_FMT_SEP=':'
+typeset __NOSTER_THEME_ZECHO_TEXT_EFFECT_SEP=':'
 typeset __NOSTER_THEME_ZECHO_POS_SEP=':'
 typeset __NOSTER_THEME_ZECHO_ESC_ANSI_SEP=';'
 
@@ -19,7 +20,7 @@ __noster_theme_zecho_lib() {
 
   __noster_theme_zecho_usage() {
     # shellcheck disable=SC2312
-    cat <<EOF
+    cat << EOF
 Usage: __noster_theme_zecho [OPTIONS] [TEXT]
 
 NAME:
@@ -79,9 +80,6 @@ EOF
 
   }
 
-
-
-
   __noster_theme_zecho_te_code() {
     typeset -l effect="${1}"
     case "${effect}" in
@@ -101,36 +99,21 @@ EOF
 
   __noster_theme_zecho_te_code_seq() {
     typeset te_name_seq="${1}"
-    typeset fmt_sep="${__NOSTER_THEME_ZECHO_FMT_SEP}"
+    typeset te_sep="${__NOSTER_THEME_ZECHO_TEXT_EFFECT_SEP}"
     typeset te_code_seq=''
-    te_name_seq="${te_name_seq}${fmt_sep}"
-    while [[ "${te_name_seq#*"${fmt_sep}"}" != "${te_name_seq}" ]]; do
-      typeset te_name="${te_name_seq%%"${fmt_sep}"*}"
+    te_name_seq="${te_name_seq}${te_sep}"
+    while [[ ${te_name_seq#*"${te_sep}"} != "${te_name_seq}" ]]; do
+      typeset te_name="${te_name_seq%%"${te_sep}"*}"
       typeset -i te_code
       te_code=$(__noster_theme_zecho_te_code "${te_name}")
       if [[ ${te_code} != '-1' ]] && [[ ${te_code} != '-2' ]]; then
         if [[ -n ${te_code_seq} ]]; then
-          te_code_seq="${te_code_seq}${fmt_sep}"
+          te_code_seq="${te_code_seq}${te_sep}"
         fi
         te_code_seq="${te_code_seq}${te_code}"
       fi
-      te_name_seq="${te_name_seq#*"${fmt_sep}"}"
+      te_name_seq="${te_name_seq#*"${te_sep}"}"
     done
-    #    OLD_IFS="${IFS}"
-    #    IFS="${fmt_sep}"
-    #    # shellcheck disable=SC2116
-    #    for te_name in $(echo "${te_name_seq}"); do
-    #      typeset -i te_code
-    #      te_code=$(__noster_theme_zecho_te_code "${te_name}")
-    #      if [[ -z ${te_code} ]]; then continue; fi
-    #      if [[ ${te_code} == '-1' ]]; then continue; fi
-    #      if [[ ${te_code} == '-2' ]]; then continue; fi
-    #      if [[ -n ${te_code_seq} ]]; then
-    #        te_code_seq="${te_code_seq}${fmt_sep}"
-    #      fi
-    #      te_code_seq="${te_code_seq}${te_code}"
-    #    done
-    #    IFS="${OLD_IFS}"
     echo "${te_code_seq}"
   }
 
@@ -265,45 +248,10 @@ EOF
     typeset fmt_sep="${__NOSTER_THEME_ZECHO_FMT_SEP}"
 
     typeset code_str=''
-
-    # COMPATIBILITY NOTE:
-    # ---------------------------------------------------------------
-    #  Dash (sh) variant:
-    #    typeset pipe
-    #    pipe="$(mktemp -u)"
-    #    mkfifo "${pipe}"
-    #    echo "${code_seq}" > "${pipe}" &
-    #    while read -rd "${fmt_sep}" code; do
-    #      if [[ -z ${code} ]]; then continue; fi
-    #      if [[ "${code}" == '-1' ]]; then continue; fi
-    #      if [[ "${code}" == '-2' ]]; then continue; fi
-    #      if [[ -n ${code_str} ]]; then
-    #        code_str="${code_str}${ansi_sep}"
-    #      fi
-    #      code_str="${code_str}${code}"
-    #    done < "${pipe}"
-    #    rm "${pipe}"
-    # ---------------------------------------------------------------
-    #
-    #    OLD_IFS="${IFS}"
-    #    IFS="${fmt_sep}"
-    #    # shellcheck disable=SC2116
-    #    #   use $(echo "${code_seq}") for zsh
-    #    for code in $(echo "${code_seq}"); do
-    #      if [[ -z ${code} ]]; then continue; fi
-    #      if [[ ${code} == '-1'   ]]; then continue; fi
-    #      if [[ ${code} == '-2'   ]]; then continue; fi
-    #      if [[ -n ${code_str} ]]; then
-    #        code_str="${code_str}${ansi_sep}"
-    #      fi
-    #      code_str="${code_str}${code}"
-    #    done
-    #    IFS="${OLD_IFS}"
-
     code_seq="${code_seq}${fmt_sep}"
-    while [[ "${code_seq#*"${fmt_sep}"}" != "${code_seq}" ]]; do
+    while [[ ${code_seq#*"${fmt_sep}"} != "${code_seq}" ]]; do
       typeset code="${code_seq%%"${fmt_sep}"*}"
-      if [[ "${code}" != '-1' ]] && [[ "${code}" != '-2' ]]; then
+      if [[ ${code} != '-1' ]] && [[ ${code} != '-2' ]]; then
         if [[ -n ${code_str} ]]; then
           code_str="${code_str}${ansi_sep}"
         fi
@@ -322,21 +270,21 @@ EOF
     typeset fmt_sep="${__NOSTER_THEME_ZECHO_FMT_SEP}"
 
     typeset code_seq
-    if [[ -n "${fg_name}" ]]; then
+    if [[ -n ${fg_name} ]]; then
       typeset fg_std_name=''
       fg_std_name=$(__noster_theme_zecho_color_std_name "${fg_name}")
       typeset -i fg_code=-1
       fg_code=$(__noster_theme_zecho_fg_code "${fg_std_name}")
       code_seq="${fg_code}"
     fi
-    if [[ -n "${bg_name}" ]]; then
+    if [[ -n ${bg_name} ]]; then
       typeset bg_std_name=''
       bg_std_name=$(__noster_theme_zecho_color_std_name "${bg_name}")
       typeset -i bg_code=-1
       bg_code=$(__noster_theme_zecho_bg_code "${bg_std_name}")
       code_seq="${code_seq}${fmt_sep}${bg_code}"
     fi
-    if [[ -n "${te_name_seq}" ]]; then
+    if [[ -n ${te_name_seq} ]]; then
       typeset te_code_seq
       te_code_seq=$(
         __noster_theme_zecho_te_code_seq "${te_name_seq}"
@@ -394,21 +342,21 @@ EOF
   __noster_theme_zecho_parse_te_name_seq() {
     typeset te_name_seq="${1}"
     typeset arg="${2}"
-    typeset fmt_sep="${__NOSTER_THEME_ZECHO_FMT_SEP}"
+    typeset te_sep="${__NOSTER_THEME_ZECHO_TEXT_EFFECT_SEP}"
     typeset std_arg
 
     # COMPATIBILITY NOTE:
     # ---------------------------------------------------------------
     #   bash/zsh/ksh93:
-    #     std_arg="${arg//[[:punct:]]/${fmt_sep}}"
+    #     std_arg="${arg//[[:punct:]]/${te_sep}}"
     #   posix:
     #     # shellcheck disable=SC2001
-    #     std_arg=$(echo "${arg}" | sed "s/[[:punct:]]/${fmt_sep}/")
+    #     std_arg=$(echo "${arg}" | sed "s/[[:punct:]]/${te_sep}/")
     # ---------------------------------------------------------------
 
-    std_arg="${arg//[[:punct:]]/${fmt_sep}}"
+    std_arg="${arg//[[:punct:]]/${te_sep}}"
     if [[ -n ${te_name_seq} ]]; then
-      te_name_seq="${te_name_seq}${fmt_sep}"
+      te_name_seq="${te_name_seq}${te_sep}"
     fi
     te_name_seq="${te_name_seq}${std_arg}"
     echo "${te_name_seq}"
@@ -559,7 +507,6 @@ EOF
   }
 }
 
-
 __noster_theme_zecho() {
   __noster_theme_zecho_lib
 
@@ -584,9 +531,6 @@ __noster_theme_zecho() {
   unset __noster_theme_zecho_do
 
 }
-
-
-
 
 __noster_theme_zecho__subshell__overload_example() (
   __noster_theme_zecho_lib
