@@ -384,7 +384,7 @@ EOF
       # ---------------------------------------------------------
 
       # shellcheck disable=SC2001
-      std_arg="${arg//[[:punct:]]/${local_sep}}"
+      std_arg="${arg//[[:punct:]]/"${local_sep}"}"
 
       fg_name="${arg%%"${local_sep}"*}"
       arg="${arg#*"${local_sep}"}"
