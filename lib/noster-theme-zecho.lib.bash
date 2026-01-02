@@ -363,32 +363,35 @@ EOF
   }
 
   __noster_theme_zecho_parse_positional() {
-    typeset arg="${1}"
-    typeset fmt_sep="${__NOSTER_THEME_ZECHO_FMT_SEP}"
-    typeset pos_sep="${__NOSTER_THEME_ZECHO_POS_SEP}"
+    typeset pos_sep="${1}"
+    typeset arg="${2}"
+    typeset te_sep="${__NOSTER_THEME_ZECHO_TEXT_EFFECT_SEP}"
+
     typeset fg_name
     typeset bg_name
     typeset te_name_seq
 
     if [[ ${arg} =~ [[:punct:]] ]]; then
+      typeset local_sep="${pos_sep}"
 
       # COMPATIBILITY NOTE:
       # ---------------------------------------------------------
       #   bash/zsh/ksh93:
-      #     std_arg="${arg//[[:punct:]]/${fmt_sep}}"
+      #     std_arg="${arg//[[:punct:]]/${local_sep}}"
       #   posix:
       #     # shellcheck disable=SC2001
-      #     std_arg=$(echo "${arg}" | sed "s/[[:punct:]]/${fmt_sep}/g")
+      #     std_arg=$(echo "${arg}" | sed "s/[[:punct:]]/${local_sep}/g")
       # ---------------------------------------------------------
 
       # shellcheck disable=SC2001
-      std_arg="${arg//[[:punct:]]/${fmt_sep}}"
+      std_arg="${arg//[[:punct:]]/${local_sep}}"
 
-      fg_name="${arg%%"${fmt_sep}"*}"
-      arg="${arg#*"${fmt_sep}"}"
-      bg_name="${arg%%"${fmt_sep}"*}"
-      arg="${arg#*"${fmt_sep}"}"
-      te_name_seq="${arg}"
+      fg_name="${arg%%"${local_sep}"*}"
+      arg="${arg#*"${local_sep}"}"
+      bg_name="${arg%%"${local_sep}"*}"
+      arg="${arg#*"${local_sep}"}"
+
+      te_name_seq="${arg//"${local_sep}"/"${te_sep}"}"
     else
 
       # COMPATIBILITY NOTE:
@@ -411,14 +414,14 @@ EOF
       #   bash=5.1.16
       #   complex substitution:
       #   split every char with ${fmt_sep}
-      te_name_seq=$(echo "${te_name_seq}" | sed "s/./&${fmt_sep}/g")
+      te_name_seq=$(echo "${te_name_seq}" | sed "s/./&${te_sep}/g")
     fi
     fg_name=$(__noster_theme_zecho_color_code_case "${fg_name}")
     bg_name=$(__noster_theme_zecho_color_code_case "${bg_name}")
 
     typeset _P_="${pos_sep}"
-    pos_res="${fg_name}${_P_}${bg_name}${_P_}${te_name_seq}"
-    echo "${pos_res}"
+    pos_result="${fg_name}${_P_}${bg_name}${_P_}${te_name_seq}"
+    echo "${pos_result}"
   }
 
   __noster_theme_zecho_do() {
@@ -446,8 +449,10 @@ EOF
           ;;
         -x | -p | --pos)
           typeset pos_arg_seq
-          typeset pos_sep="${__NOSTER_THEME_ZECHO_POS_SEP}"
-          pos_arg_seq=$(__noster_theme_zecho_parse_positional "${2}")
+          typeset -r pos_sep=","
+          pos_arg_seq=$(
+            __noster_theme_zecho_parse_positional "${pos_sep}" "${2}"
+          )
           fg_name="${pos_arg_seq%%"${pos_sep}"*}"
           # rest
           pos_arg_seq="${pos_arg_seq#*"${pos_sep}"}"
