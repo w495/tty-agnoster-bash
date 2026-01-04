@@ -1,5 +1,4 @@
-
-[{*.bash,*.sh,*.zsh}]
+[{*.sh,*.ash,*.osh,*.zsh,*.bash,*.dash}]
 indent_size = 2
 tab_width = 2
 
