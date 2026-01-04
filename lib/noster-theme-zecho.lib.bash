@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck enable=all disable=SC2317
+# shellcheck enable=all
 
 # COMPATIBILITY NOTE:
 # ---------------------------------------------------------------
@@ -231,9 +231,11 @@ EOF
   __noster_zecho_fg_code() {
     typeset code_pair
     code_pair=$(__noster_zecho_color_code_pair "${1}")
+    # fecho
     typeset -i fg_code="${code_pair%\ *}"
     echo "${fg_code}"
   }
+
 
   __noster_zecho_bg_code() {
     typeset code_pair
@@ -354,7 +356,9 @@ EOF
     #     std_arg=$(echo "${arg}" | sed "s/[[:punct:]]/${te_sep}/")
     # ---------------------------------------------------------------
 
-    std_arg="${arg//[[:punct:]]/${te_sep}}"
+    # shellcheck disable=SC2001
+    std_arg=$(echo "${arg}" | sed "s/[[:punct:]]/${te_sep}/")
+
     if [[ -n ${te_name_seq} ]]; then
       te_name_seq="${te_name_seq}${te_sep}"
     fi
@@ -406,9 +410,9 @@ EOF
       #     te_name_seq=$(echo "${arg}" | cut -c3-)
       # ---------------------------------------------------------
 
-      fg_name="${arg:0:1}"
-      bg_name="${arg:1:1}"
-      te_name_seq="${arg:2}"
+      fg_name=$(echo "${arg}" | cut -c1)
+      bg_name=$(echo "${arg}" | cut -c2)
+      te_name_seq=$(echo "${arg}" | cut -c3-)
 
       # shellcheck disable=SC2001
       #   bash=5.1.16
@@ -447,6 +451,7 @@ EOF
         __noster_zecho_tail "${fg_name}" "${bg_name}" "${te_name_seq}"
       )
       result="${head}${text}${tail}"
+      echo "${result}"
   }
 
   __noster_zecho() {
@@ -511,6 +516,7 @@ EOF
     typeset when_use_color='always'
     typeset use_newline=true
     typeset use_initial_escapes=false
+    typeset output_stream_name='stdin'
 
     while [[ -n ${options} ]]; do
       case ${1} in
@@ -593,7 +599,7 @@ EOF
           ;;
         '--' | '')
           shift 1
-          # break
+          break
           ;;
         *)
           echo "Unknown parameter '${1}'." >&0
@@ -609,9 +615,9 @@ EOF
       newline='\n'
     fi;
     if ${use_initial_escapes}; then
-      printf -v text "%b" "${text}" "${newline}"
+      printf -v text "%b" "${text}"
     else
-      printf -v text "%q" "${text}" "${newline}"
+      printf -v text "%q" "${text}"
     fi
 
     ## OUTPUT STREAM OPTIONS
@@ -638,50 +644,55 @@ EOF
     if ${use_colors}; then
       result=$(
         __noster_zecho_do_color \
-        "${fg_name}" "${bg_name}" "${te_name_seq}" ${text}
+        "${fg_name}" "${bg_name}" "${te_name_seq}" "${text}"
       )
     else
       result="${text}"
     fi
 
-
-
-    printf '%b%s' "${result}" "${newline}" >&${output_stream_fd}
+    printf '%b%b' "${result}" "${newline}" >&"${output_stream_fd}"
   }
 }
 
-__noster_zecho() {
-  __noster_zecho_lib
 
-  __noster_zecho "${@}"
+__noster_zecho_lib
 
-  # grep '()' | sed -re 's/\s+(.*)\(\) \{/unset \1/gi'
-  unset __noster_zecho_usage
-  unset __noster_zecho_te_code
-  unset __noster_zecho_te_code_seq
-  unset __noster_zecho_color_code_case
-  unset __noster_zecho_rename_color
-  unset __noster_zecho_color_std_name
-  unset __noster_zecho_color_code_pair
-  unset __noster_zecho_fg_code
-  unset __noster_zecho_bg_code
-  unset __noster_zecho_join_code_seq
-  unset __noster_zecho_code_str
-  unset __noster_zecho_head
-  unset __noster_zecho_tail
-  unset __noster_zecho_parse_te_name_seq
-  unset __noster_zecho_parse_positional
-  unset __noster_zecho_do
+__noster_zecho "${@}"
 
-}
 
-__noster_zecho__subshell__overload_example() (
-  __noster_zecho_lib
-
-  __noster_zecho_usage() {
-    echo "Overload example. the main function is $1"
-  }
-
-  __noster_zecho_do "${@}"
-
-)
+#
+#__noster_zecho() {
+#  __noster_zecho_lib
+#
+#  __noster_zecho "${@}"
+#
+#  # grep '()' | sed -re 's/\s+(.*)\(\) \{/unset \1/gi'
+#  unset __noster_zecho_usage
+#  unset __noster_zecho_te_code
+#  unset __noster_zecho_te_code_seq
+#  unset __noster_zecho_color_code_case
+#  unset __noster_zecho_rename_color
+#  unset __noster_zecho_color_std_name
+#  unset __noster_zecho_color_code_pair
+#  unset __noster_zecho_fg_code
+#  unset __noster_zecho_bg_code
+#  unset __noster_zecho_join_code_seq
+#  unset __noster_zecho_code_str
+#  unset __noster_zecho_head
+#  unset __noster_zecho_tail
+#  unset __noster_zecho_parse_te_name_seq
+#  unset __noster_zecho_parse_positional
+#  unset __noster_zecho_do
+#
+#}
+#
+#__noster_zecho__subshell__overload_example() (
+#  __noster_zecho_lib
+#
+#  __noster_zecho_usage() {
+#    echo "Overload example. the main function is $1"
+#  }
+#
+#  __noster_zecho_do "${@}"
+#
+#)
