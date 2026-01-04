@@ -11,17 +11,17 @@
 #     shfmt -ci -i 2 -sr -s -bn -kp -ln posix -d
 # ---------------------------------------------------------------
 
-typeset __NOSTER_THEME_ZECHO_FMT_SEP=':'
-typeset __NOSTER_THEME_ZECHO_TEXT_EFFECT_SEP=':'
-typeset __NOSTER_THEME_ZECHO_POS_SEP=':'
-typeset __NOSTER_THEME_ZECHO_ESC_ANSI_SEP=';'
+typeset __NOSTER_ZECHO_FMT_SEP=':'
+typeset __NOSTER_ZECHO_TEXT_EFFECT_SEP=':'
+typeset __NOSTER_ZECHO_POS_SEP=':'
+typeset __NOSTER_ZECHO_ESC_ANSI_SEP=';'
 
-__noster_theme_zecho_lib() {
+__noster_zecho_lib() {
 
-  __noster_theme_zecho_usage() {
+  __noster_zecho_usage() {
     # shellcheck disable=SC2312
     cat << EOF
-Usage: __noster_theme_zecho [OPTIONS] [TEXT]
+Usage: __noster_zecho [OPTIONS] [TEXT]
 
 NAME:
   «Colourful Echo» —> «C. Echo» —> «cecho». It sounds like /see‑EK‑oh/
@@ -31,9 +31,9 @@ NAME:
   So we use «Z» to represent /ts/-sound.
 
 EXAMPLES:
-  > __noster_theme_zecho -b -yellow -f -RED -e DEL -t 'Some waring'
+  > __noster_zecho -b -yellow -f -RED -e DEL -t 'Some waring'
   It gives you:
-    $(__noster_theme_zecho -b YELLOW -f RED -e DEL -t 'Some waring')
+    $(__noster_zecho -b YELLOW -f RED -e DEL -t 'Some waring')
   OPTIONS:
   -b — for background color in a lower or an UPPER case.
   -b — for background color in a lower or an UPPER case.
@@ -80,7 +80,7 @@ EOF
 
   }
 
-  __noster_theme_zecho_te_code() {
+  __noster_zecho_te_code() {
     typeset -l effect="${1}"
     case "${effect}" in
       0 | n |     clear |     reset)    echo 0 ;;
@@ -97,15 +97,15 @@ EOF
     esac
   }
 
-  __noster_theme_zecho_te_code_seq() {
+  __noster_zecho_te_code_seq() {
     typeset te_name_seq="${1}"
-    typeset te_sep="${__NOSTER_THEME_ZECHO_TEXT_EFFECT_SEP}"
+    typeset te_sep="${__NOSTER_ZECHO_TEXT_EFFECT_SEP}"
     typeset te_code_seq=''
     te_name_seq="${te_name_seq}${te_sep}"
     while [[ ${te_name_seq#*"${te_sep}"} != "${te_name_seq}" ]]; do
       typeset te_name="${te_name_seq%%"${te_sep}"*}"
       typeset -i te_code
-      te_code=$(__noster_theme_zecho_te_code "${te_name}")
+      te_code=$(__noster_zecho_te_code "${te_name}")
       if [[ ${te_code} != '-1' ]] && [[ ${te_code} != '-2' ]]; then
         if [[ -n ${te_code_seq} ]]; then
           te_code_seq="${te_code_seq}${te_sep}"
@@ -117,7 +117,7 @@ EOF
     echo "${te_code_seq}"
   }
 
-  __noster_theme_zecho_color_code_case() {
+  __noster_zecho_color_code_case() {
     case ${1} in
       [[:lower:]]) echo "-${1}" ;;
       [[:upper:]]) echo "+${1}" ;;
@@ -125,7 +125,7 @@ EOF
     esac
   }
 
-  __noster_theme_zecho_rename_color() {
+  __noster_zecho_rename_color() {
     typeset -l color_name="${1}"
     typeset -l cl=''
     cl="cyan|magenta|yellow|black|red|green|blue|white"
@@ -139,10 +139,10 @@ EOF
     echo "${color_name}" | sed -re "${patten}"
   }
 
-  __noster_theme_zecho_color_std_name() {
+  __noster_zecho_color_std_name() {
     typeset -l color="${1}"
     typeset -l renamed_color
-    renamed_color=$(__noster_theme_zecho_rename_color "${color}")
+    renamed_color=$(__noster_zecho_rename_color "${color}")
     case "${renamed_color}" in
       -k | k | -0 | 0 | 30 | 40 | rgb-000 | -black | black)
         echo 'basic black'
@@ -203,7 +203,7 @@ EOF
     esac
   }
 
-  __noster_theme_zecho_color_code_pair() {
+  __noster_zecho_color_code_pair() {
     typeset color_std_name="${1}"
     case "${color_std_name}" in
       'basic black')    echo 30 40  ;;
@@ -228,24 +228,24 @@ EOF
     esac
   }
 
-  __noster_theme_zecho_fg_code() {
+  __noster_zecho_fg_code() {
     typeset code_pair
-    code_pair=$(__noster_theme_zecho_color_code_pair "${1}")
+    code_pair=$(__noster_zecho_color_code_pair "${1}")
     typeset -i fg_code="${code_pair%\ *}"
     echo "${fg_code}"
   }
 
-  __noster_theme_zecho_bg_code() {
+  __noster_zecho_bg_code() {
     typeset code_pair
-    code_pair=$(__noster_theme_zecho_color_code_pair "${1}")
+    code_pair=$(__noster_zecho_color_code_pair "${1}")
     typeset -i bg_code="${code_pair#*\ }"
     echo "${bg_code}"
   }
 
-  __noster_theme_zecho_join_code_seq() {
+  __noster_zecho_join_code_seq() {
     typeset code_seq="${1}"
-    typeset ansi_sep="${__NOSTER_THEME_ZECHO_ESC_ANSI_SEP}"
-    typeset fmt_sep="${__NOSTER_THEME_ZECHO_FMT_SEP}"
+    typeset ansi_sep="${__NOSTER_ZECHO_ESC_ANSI_SEP}"
+    typeset fmt_sep="${__NOSTER_ZECHO_FMT_SEP}"
 
     typeset code_str=''
     code_seq="${code_seq}${fmt_sep}"
@@ -263,48 +263,48 @@ EOF
     echo "${code_str}"
   }
 
-  __noster_theme_zecho_code_str() {
+  __noster_zecho_code_str() {
     typeset fg_name="${1}"
     typeset bg_name="${2}"
     typeset te_name_seq="${3}"
-    typeset fmt_sep="${__NOSTER_THEME_ZECHO_FMT_SEP}"
+    typeset fmt_sep="${__NOSTER_ZECHO_FMT_SEP}"
 
     typeset code_seq
     if [[ -n ${fg_name} ]]; then
       typeset fg_std_name=''
-      fg_std_name=$(__noster_theme_zecho_color_std_name "${fg_name}")
+      fg_std_name=$(__noster_zecho_color_std_name "${fg_name}")
       typeset -i fg_code=-1
-      fg_code=$(__noster_theme_zecho_fg_code "${fg_std_name}")
+      fg_code=$(__noster_zecho_fg_code "${fg_std_name}")
       code_seq="${fg_code}"
     fi
     if [[ -n ${bg_name} ]]; then
       typeset bg_std_name=''
-      bg_std_name=$(__noster_theme_zecho_color_std_name "${bg_name}")
+      bg_std_name=$(__noster_zecho_color_std_name "${bg_name}")
       typeset -i bg_code=-1
-      bg_code=$(__noster_theme_zecho_bg_code "${bg_std_name}")
+      bg_code=$(__noster_zecho_bg_code "${bg_std_name}")
       code_seq="${code_seq}${fmt_sep}${bg_code}"
     fi
     if [[ -n ${te_name_seq} ]]; then
       typeset te_code_seq
       te_code_seq=$(
-        __noster_theme_zecho_te_code_seq "${te_name_seq}"
+        __noster_zecho_te_code_seq "${te_name_seq}"
       )
       code_seq="${code_seq}${fmt_sep}${te_code_seq}"
     fi
     typeset code_str
     code_str=$(
-      __noster_theme_zecho_join_code_seq "${code_seq}"
+      __noster_zecho_join_code_seq "${code_seq}"
     )
     echo "${code_str}"
   }
 
-  __noster_theme_zecho_head() {
+  __noster_zecho_head() {
     typeset fg_name="${1}"
     typeset bg_name="${2}"
     typeset te_name_seq="${3}"
     typeset seq=''
     seq=$(
-      __noster_theme_zecho_code_str "${fg_name}" "${bg_name}" "${te_name_seq}"
+      __noster_zecho_code_str "${fg_name}" "${bg_name}" "${te_name_seq}"
     )
 
     # COMPATIBILITY NOTE:
@@ -321,9 +321,9 @@ EOF
     echo "${head}"
   }
 
-  __noster_theme_zecho_tail() {
+  __noster_zecho_tail() {
     typeset reset_code
-    reset_code=$(__noster_theme_zecho_te_code reset)
+    reset_code=$(__noster_zecho_te_code reset)
 
     # COMPATIBILITY NOTE:
     # ---------------------------------------------------------------
@@ -339,10 +339,10 @@ EOF
     echo "${tail}"
   }
 
-  __noster_theme_zecho_parse_te_name_seq() {
+  __noster_zecho_parse_te_name_seq() {
     typeset te_name_seq="${1}"
     typeset arg="${2}"
-    typeset te_sep="${__NOSTER_THEME_ZECHO_TEXT_EFFECT_SEP}"
+    typeset te_sep="${__NOSTER_ZECHO_TEXT_EFFECT_SEP}"
     typeset std_arg
 
     # COMPATIBILITY NOTE:
@@ -362,10 +362,10 @@ EOF
     echo "${te_name_seq}"
   }
 
-  __noster_theme_zecho_parse_positional() {
+  __noster_zecho_parse_positional() {
     typeset pos_sep="${1}"
     typeset arg="${2}"
-    typeset te_sep="${__NOSTER_THEME_ZECHO_TEXT_EFFECT_SEP}"
+    typeset te_sep="${__NOSTER_ZECHO_TEXT_EFFECT_SEP}"
 
     typeset fg_name
     typeset bg_name
@@ -416,42 +416,124 @@ EOF
       #   split every char with ${fmt_sep}
       te_name_seq=$(echo "${te_name_seq}" | sed "s/./&${te_sep}/g")
     fi
-    fg_name=$(__noster_theme_zecho_color_code_case "${fg_name}")
-    bg_name=$(__noster_theme_zecho_color_code_case "${bg_name}")
+    fg_name=$(__noster_zecho_color_code_case "${fg_name}")
+    bg_name=$(__noster_zecho_color_code_case "${bg_name}")
 
     typeset _P_="${pos_sep}"
     pos_result="${fg_name}${_P_}${bg_name}${_P_}${te_name_seq}"
     echo "${pos_result}"
   }
 
-  __noster_theme_zecho_do() {
+  __noster_zecho_output_stream_fd() {
+    typeset stream_name="${1}"
+    case "${stream_name}" in
+      1 | out | stdout )    echo 1 ;;
+      2 | err | stderr )    echo 2 ;;
+      *)                    echo 1 ;;
+    esac
+  }
+
+  __noster_zecho_do_color() {
+      typeset fg_name="${1}"
+      typeset bg_name="${2}"
+      typeset te_name_seq="${3}"
+      typeset text="${4}"
+      typeset head
+      head=$(
+        __noster_zecho_head "${fg_name}" "${bg_name}" "${te_name_seq}"
+      )
+      typeset tail
+      tail=$(
+        __noster_zecho_tail "${fg_name}" "${bg_name}" "${te_name_seq}"
+      )
+      result="${head}${text}${tail}"
+  }
+
+  __noster_zecho() {
     typeset options
-    typeset nm='__noster_theme_zecho'
-    typeset sh='p:c:b:f:e:x:t:adh'
-    typeset lg='pos:,bg:,fg:,te:,help,auto'
-    options=$(getopt -n "${nm}" -o "${sh}" -l "${lg}" -- "${@}")
+    typeset nm='__noster_zecho'
+    typeset so  # — short options
+    ## MAIN SHORT OPTIONS
+    so="${so}f:"  # — foreground
+    so="${so}b:"  # — background
+    so="${so}t:"  # — text effect or emphasis
+    so="${so}p:"  # — positional form
+    so="${so}h"   # — help
+    so="${so}v"   # — version
+
+    ## OUTPUT STREAM SHORT OPTIONS
+    so="${so}s:12"   # — stream
+
+    ## ECHO COMPATIBILITY SHORT OPTIONS:
+    so="${so}n"  # — do not output the trailing newline.
+    so="${so}e"  # — enable interpretation of backslash escapes.
+    so="${so}E"  # — disable interpretation of backslash escapes.
+
+    ## COREUTILS COMPATIBILITY SHORT OPTIONS:
+    so="${so}c::a"
+    # -c=[always|never|auto] like with diff, ls, grep and others.
+    # Plain -c means -c='auto'. Another values works as for -f.
+    # -a means -c='auto'.
+
+    typeset long_options
+    # MAIN LONG OPTIONS
+    long_options="${long_options}fg:,foreground:,foreground-color:,"
+    long_options="${long_options}bg:,background:,background-color:,"
+    long_options="${long_options}te:,text-effect:,em:,emphasis:,"
+    long_options="${long_options}ps:,pos:,positional:,"
+    long_options="${long_options}help,"
+    long_options="${long_options}version,"
+
+    ## OUTPUT STREAM LONG OPTIONS
+    long_options="${long_options}st:,str:,stream:,"
+    long_options="${long_options}out,err,stdout,stderr,"
+
+    ## ECHO COMPATIBILITY LONG OPTIONS:
+    long_options="${long_options}nn,nonewline,"
+    long_options="${long_options}esc,escapes"
+    long_options="${long_options}ne,nesc,noesc,noescapes"
+
+    ## COREUTILS COMPATIBILITY LONG OPTIONS:
+    long_options="${long_options}color::,auto,auto-color"
+    # --color=[always|never|auto] like with diff, ls, grep.
+    # Plain --color means --color='auto'. Another values
+    # e.g (NOT 'always|never|auto)  works as for --foreground.
+    # --auto and --auto-color means --color='auto'.
+
+    options=$(
+      getopt -n "${nm}" -o "${so}" -l "${long_options}" -- "${@}"
+    )
     eval set -- "${options}"
     typeset fg_name=""
     typeset bg_name=""
     typeset te_name_seq=''
     typeset text=""
-    typeset detect_colors=false
+    typeset when_use_color='always'
+    typeset use_newline=true
+    typeset use_initial_escapes=false
 
     while [[ -n ${options} ]]; do
       case ${1} in
-        -h)
-          __noster_theme_zecho_usage __noster_theme_zecho_do
-          shift 1
+      # MAIN OPTIONS
+        -f | --fg | --foreground | --foreground-color)
+          fg_name="${2}"
+          shift 2
           ;;
-        -a | --auto)
-          detect_colors=true
-          shift 1
+        -b | --bg | --background | --background-color)
+          bg_name="${2}"
+          shift 2
           ;;
-        -x | -p | --pos)
+        -t | --te | --text-effect | --em | --emph | --emphasis)
+          te_name_seq=$(
+            __noster_zecho_parse_te_name_seq "${te_name_seq}" "${2}"
+          )
+          shift 2
+          ;;
+        -p | --ps | --pos | positional)
           typeset pos_arg_seq
           typeset -r pos_sep=","
           pos_arg_seq=$(
-            __noster_theme_zecho_parse_positional "${pos_sep}" "${2}"
+            __noster_zecho_parse_positional "${pos_sep}" "${2}"
           )
           fg_name="${pos_arg_seq%%"${pos_sep}"*}"
           # rest
@@ -461,27 +543,57 @@ EOF
           te_name_seq="${pos_arg_seq#*"${pos_sep}"}"
           shift 2
           ;;
-        -c | -f | --fg)
-          fg_name="${2}"
-          shift 2
+        -h | --help)
+          __noster_zecho_usage __noster_zecho_do
+          shift 1
           ;;
-        -b | --bg)
-          bg_name="${2}"
-          shift 2
+        -v | --version )
+          printf '0.1767469499'
+          shift 1
           ;;
-        -e | --te)
+      ## OUTPUT STREAM OPTIONS
+        -s | --st | --str | --stream )
           te_name_seq=$(
-            __noster_theme_zecho_parse_te_name_seq "${te_name_seq}" "${2}"
+            __noster_zecho_parse_te_name_seq "${te_name_seq}" "${2}"
           )
           shift 2
           ;;
-        -t | --text)
-          text="${2}"
+
+      # ECHO COMPATIBILITY
+        -n | --nn | --nonewline)
+          # Echo compatibility.
+          use_newline=false
+          shift 1
+          ;;
+        -e | --esc | --escapes )
+          # Echo compatibility.
+          use_initial_escapes=true
+          shift 1
+          ;;
+        -E | --ne | --nesc | --noesc | --noescapes )
+          # Echo compatibility.
+          use_initial_escapes=false
+          shift 1
+          ;;
+      # COREUTILS COMPATIBILITY
+        -c | --color)
+          ## Coreutils compatibility.
+          typeset arg="${2:-auto}"
+          if [[ "${arg}" =~ ^(always|never|auto)$  ]]; then
+            when_use_color="${arg}"
+          else
+            fg_name="${arg}"
+          fi
           shift 2
+          ;;
+        -a | --auto | --auto-color )
+          ## Coreutils compatibility.
+          when_use_color='auto'
+          shift 1
           ;;
         '--' | '')
           shift 1
-          break
+          # break
           ;;
         *)
           echo "Unknown parameter '${1}'." >&0
@@ -489,61 +601,87 @@ EOF
           ;;
       esac
     done
-    text="${text}${*}"
-    typeset head
-    head=$(
-      __noster_theme_zecho_head "${fg_name}" "${bg_name}" "${te_name_seq}"
-    )
-    typeset tail
-    tail=$(
-      __noster_theme_zecho_tail "${fg_name}" "${bg_name}" "${te_name_seq}"
-    )
-    typeset result
-    if ${detect_colors}; then
-      if [[ $- =~ i ]] && [[ -t 1 ]]; then
-        result="${head}${text}${tail}"
-      else
-        result="${text}"
-      fi
+    text="${*}"
+
+    # ECHO COMPATIBILITY
+    typeset newline=''
+    if ${use_newline}; then
+      newline='\n'
+    fi;
+    if ${use_initial_escapes}; then
+      printf -v text "%b" "${text}" "${newline}"
     else
-      result="${head}${text}${tail}"
+      printf -v text "%q" "${text}" "${newline}"
     fi
-    printf '%b\n' "${result}"
+
+    ## OUTPUT STREAM OPTIONS
+    typeset output_stream_fd
+    output_stream_fd=$(
+      __noster_zecho_output_stream_fd "${output_stream_name}"
+    )
+
+    # COREUTILS COMPATIBILITY
+    typeset use_colors
+    typeset output_type='file'
+    if [[ -t ${output_stream_fd} ]]; then
+      output_type='stream'
+    fi
+    case "${when_use_color}_${output_type}" in
+      never*)  use_colors=false  ;;
+      always*) use_colors=true   ;;
+      _stream) use_colors=true   ;;
+      _file)   use_colors=false  ;;
+      *)       use_colors=true   ;;
+    esac
+
+    typeset result
+    if ${use_colors}; then
+      result=$(
+        __noster_zecho_do_color \
+        "${fg_name}" "${bg_name}" "${te_name_seq}" ${text}
+      )
+    else
+      result="${text}"
+    fi
+
+
+
+    printf '%b%s' "${result}" "${newline}" >&${output_stream_fd}
   }
 }
 
-__noster_theme_zecho() {
-  __noster_theme_zecho_lib
+__noster_zecho() {
+  __noster_zecho_lib
 
-  __noster_theme_zecho_do "${@}"
+  __noster_zecho "${@}"
 
   # grep '()' | sed -re 's/\s+(.*)\(\) \{/unset \1/gi'
-  unset __noster_theme_zecho_usage
-  unset __noster_theme_zecho_te_code
-  unset __noster_theme_zecho_te_code_seq
-  unset __noster_theme_zecho_color_code_case
-  unset __noster_theme_zecho_rename_color
-  unset __noster_theme_zecho_color_std_name
-  unset __noster_theme_zecho_color_code_pair
-  unset __noster_theme_zecho_fg_code
-  unset __noster_theme_zecho_bg_code
-  unset __noster_theme_zecho_join_code_seq
-  unset __noster_theme_zecho_code_str
-  unset __noster_theme_zecho_head
-  unset __noster_theme_zecho_tail
-  unset __noster_theme_zecho_parse_te_name_seq
-  unset __noster_theme_zecho_parse_positional
-  unset __noster_theme_zecho_do
+  unset __noster_zecho_usage
+  unset __noster_zecho_te_code
+  unset __noster_zecho_te_code_seq
+  unset __noster_zecho_color_code_case
+  unset __noster_zecho_rename_color
+  unset __noster_zecho_color_std_name
+  unset __noster_zecho_color_code_pair
+  unset __noster_zecho_fg_code
+  unset __noster_zecho_bg_code
+  unset __noster_zecho_join_code_seq
+  unset __noster_zecho_code_str
+  unset __noster_zecho_head
+  unset __noster_zecho_tail
+  unset __noster_zecho_parse_te_name_seq
+  unset __noster_zecho_parse_positional
+  unset __noster_zecho_do
 
 }
 
-__noster_theme_zecho__subshell__overload_example() (
-  __noster_theme_zecho_lib
+__noster_zecho__subshell__overload_example() (
+  __noster_zecho_lib
 
-  __noster_theme_zecho_usage() {
+  __noster_zecho_usage() {
     echo "Overload example. the main function is $1"
   }
 
-  __noster_theme_zecho_do "${@}"
+  __noster_zecho_do "${@}"
 
 )
