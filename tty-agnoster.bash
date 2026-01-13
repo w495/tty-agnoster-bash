@@ -6,10 +6,7 @@ export SEGMENT_SEPARATOR='▒░'
 export RIGHT_SEPARATOR='▒░'
 export VERBOSE_MODE=false
 
-
-
-
-source "$(dirname "${BASH_SOURCE[0]}")/lib/noster-theme-zecho.lib.bash"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/zx.lib.posix.sh"
 
 __tty_ag_main() {
   local options
@@ -51,7 +48,7 @@ __tty_ag_main() {
     esac
   done
 
-  PROMPT_COMMAND=__tty_ag_set_bash_prompt
+    PROMPT_COMMAND=__tty_ag_set_bash_prompt
 }
 
 __tty_ag_debug() {
@@ -707,4 +704,4 @@ __tty_ag_set_bash_prompt() {
 
 }
 
-#__tty_ag_main "${@}"
+__tty_ag_main "${@}"
