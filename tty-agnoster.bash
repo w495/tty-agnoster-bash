@@ -7,6 +7,8 @@ export RIGHT_SEPARATOR='▒░'
 export VERBOSE_MODE=false
 
 
+
+
 source "$(dirname "${BASH_SOURCE[0]}")/lib/noster-theme-zecho.lib.bash"
 
 __tty_ag_main() {

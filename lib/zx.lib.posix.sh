@@ -14,50 +14,70 @@
 
 __zx__usage() {
   # shellcheck disable=SC2312
-  cat << EOF
-Usage: __zecho [opt_seq] [TEXT]
+  printf 'Usage: __zx [OPTIONS] [TEXT]\n'
+  printf 'NAME:
+  «Colourful Echo» —> «C. Echo» —> «cecho». It _sounds like /see‑EK‑oh/
+  in English. But in Latin it _sounds like /tse‑kho/, that is similar to
+  * German «Zeche» — /tseh‑uhn/ — colliery;
+  * Russian «Цех»  — /tsekh/    — workshop.
+  so we use «Z» to represent /ts/-_sound.
+  \n'
 
-NAME:
-«Colourful Echo» —> «C. Echo» —> «cecho». It _sounds like /see‑EK‑oh/
-in English. But in Latin it _sounds like /tse‑kho/, that is similar to
-* German «Zeche» — /tseh‑uhn/ — colliery;
-* Russian «Цех»  — /tsekh/    — workshop.
-so we use «Z» to represent /ts/-_sound.
+  printf 'EXAMPLES:
+    > __zx -f +RED -b -yellow -e DEL -t some waring
+    \v'
+  __zx -b -yellow -f -RED -t del some waring
+  printf '\n'
 
-EXAMPLES:
-> __zecho -b -yellow -f -RED -e DEL -t '_some waring'
-It gives you:
-$(__zecho -b YELLOW -f RED -e DEL -t '_some waring')
-opt_seq:
--b — for background color in a lower or an UPPER case.
--b — for background color in a lower or an UPPER case.
 
--e — for text effect
+  printf 'OPTIONS:
+    :-f:--fg — for foreground color in a lower or an UPPER case.
+    :-b:--bg — for background color in a lower or an UPPER case.
+    :-t:--te — for text effect"
+  \n' | column -t -s '.:|'
 
-COLORS:
-Dark CMYK
--cyan     — $($1 -f dc cyan);
--magenta  — $($1 -f dm magenta);
--yellow   — $($1 -f dy yellow);
--black    — $($1 -f dk black);
 
-Dark RGB
--red      — $($1 -f dr red);
--green    — $($1 -f dg green);
--blue     — $($1 -f db blue);
--white    — $($1 -f dw white);
-Bright CMYK
-+cyan     — $($1 -f lc cyan);
-+magenta  — $($1 -f lm magenta);
-+yellow   — $($1 -f ly yellow);
-+black    — $($1 -f lk black);
-Bright RGB
-+red      — $($1 -f lr red);
-+green    — $($1 -f lg green);
-+blue     — $($1 -f lb blue);
-+white    — $($1 -f lw white);
-Any other interprets as empty color.
-EOF
+  { printf 'COLORS:\n'
+    __zx      -- '  : -k | k | -0 | 0 | rgb-000 | -black   | black'
+    __zx -f-r -- '  : -r | r | -1 | 1 | rgb-100 | -red     | red'
+    __zx -f-g -- '  : -g | g | -2 | 2 | rgb-010 | -green   | green'
+    __zx -f-y -- '  : -y | y | -3 | 3 | rgb-110 | -yellow  | yellow'
+    __zx -f-b -- '  : -b | b | -4 | 4 | rgb-001 | -blue    | blue'
+    __zx -f-m -- '  : -m | m | -5 | 5 | rgb-101 | -magenta | magenta'
+    __zx -f-c -- '  : -c | c | -6 | 6 | rgb-011 | -cyan    | cyan'
+    __zx -f-w -- '  : -w | w | -7 | 7 | rgb-111 | -white   | white'
+    __zx -f+k -- '  : +k |   . +0 |   . rgb+000 | +black   | gray'
+    __zx -f+r -- '  : +r |   . +1 |   . rgb+100 | +red'
+    __zx -f+g -- '  : +g |   . +2 |   . rgb+010 | +green'
+    __zx -f+y -- '  : +y |   . +3 |   . rgb+110 | +yellow'
+    __zx -f+b -- '  : +b |   . +4 |   . rgb+001 | +blue'
+    __zx -f+m -- '  : +m |   . +5 |   . rgb+101 | +magenta'
+    __zx -f+c -- '  : +c |   . +6 |   . rgb+011 | +cyan'
+    __zx -f+w -- '  : +w |   . +7 |   . rgb+111 | +white'
+  } | column -t -s '.:|'
+
+
+  { printf 'EFFECTS:\n'
+    printf '  :'
+    __zx -tn -- '0 | n |   : cl | clear | reset '
+    printf '  :bold:'
+    __zx -tb -- '1 | b |   : bd | bb | bold | bl '
+    printf '  :faint:'
+    __zx -td -- '2 | d | f | fa | di | dim  | faint'
+    printf '  :italic:'
+    __zx -ti -- '3 | i | e | it | em | italic'
+    printf '  :underline:'
+    __zx -tu -- '4 | u | _ | un | ln | underline'
+    printf '  :blink:'
+    __zx -tl -- '5 | l |   : bl | ll | blink'
+    printf '  :reverse:'
+    __zx -tr -- '7 | r |   : re | rv  | reverse'
+    printf '  :conceal:'
+    __zx -tc -- '8 | c |   : co | con | conceal'
+    printf '  :strike:'
+    __zx -tx -- '9 | s | x |  st |strike | del'
+    printf '  :'
+  } | column -t -s ':|'
 
 }
 
@@ -144,7 +164,6 @@ __zx_punct_to_sep() {
     while test "${te_name_seq#*"${te_sep}"}" != "${te_name_seq}"; do
       te_name="${te_name_seq%%"${te_sep}"*}"
       if test -n "${te_name}"; then
-        echo "'${te_name}'"
         __zx__text_effect__code "${te_name}"
         if test "${__zx__text_effect__code__}" -gt 0; then
           if test -n "${te_code_seq}"; then
@@ -192,8 +211,8 @@ __zx_punct_to_sep() {
     patten="
       s/^((d|dark|ba|basic)(\W|_)?)(${colors})$/-\4/gi;
       s/^((i|l|light|br|bright)(\W|_)?)(${colors})?$/+\4/gi;
-      s/^(${colors})((\W|_)?(d|dark|ba|basic))$/-\1/gi;
-      s/^(${colors})((\W|_)?(i|l|light|b|br|bright))$/+\1/gi;
+      s/^(${colors})((\W|_)?(\-|d|dark|ba|basic))$/-\1/gi;
+      s/^(${colors})((\W|_)?(\+|i|l|light|b|br|bright))$/+\1/gi;
       "
     __zx__color__rename__=$(
       echo "${1}" | sed -re "${patten}"
@@ -494,9 +513,6 @@ __zx__apply() {
   __zx__apply="${__zx__head}${text}${__zx__tail}"
 }
 
-
-
-
 __zx() {
   nm='__zx'
   so='' # — short opt_seq
@@ -577,7 +593,7 @@ __zx() {
       shift 2
       ;;
     -h | --help)
-      __zx__usage __zecho
+      __zx__usage
       shift 1
       ;;
     -v | --version)
@@ -688,176 +704,6 @@ __zx() {
   printf '%b%b' "${result}" "${newline}"
 }
 
-__zx__test() {
-  pat="${1}"
-  shift
-  tval="$(__zx "${@}")"
-
-  if test "${tval}" = "$(printf "%b" "${pat}" )"; then
-    printf "\tok : %b : zx %s\n"  "${pat}" "${*}"
-  else
-    printf "\tfail : %s: %s %s\n"  "${pat}" "${*}" "${tval}"
-  fi
-
-}
-
-
-__zx__tests() {
-  echo "FOREGROUND FORMS"
-  dart_red_fg="\0001\0033[31m\0002'red foreground'\0001\0033[0m\0002"
-  __zx__test "${dart_red_fg}" -fr "'red foreground'"
-  __zx__test "${dart_red_fg}" -fred "'red foreground'"
-  __zx__test "${dart_red_fg}" -f red "'red foreground'"
-  __zx__test "${dart_red_fg}" --foreground red "'red foreground'"
-
-  echo "BACKGROUND FORMS"
-  dart_red_bg="\0001\0033[41m\0002'red background'\0001\0033[0m\0002"
-  __zx__test "${dart_red_bg}" -br "'red background'"
-  __zx__test "${dart_red_bg}" -bred "'red background'"
-  __zx__test "${dart_red_bg}" -b red "'red background'"
-  __zx__test "${dart_red_bg}" --background red "'red background'"
-
-  echo "COLOR SHORT FORMS — +/-"
-  __zx__test "\0001\0033[31m\0002'dark color letter'\0001\0033[0m\0002" \
-    --fg r "'dark color letter'"
-  __zx__test "\0001\0033[31m\0002'dark color minus'\0001\0033[0m\0002" \
-    --fg -r "'dark color minus'"
-  __zx__test "\0001\0033[91m\0002'bright color plus'\0001\0033[0m\0002" \
-    --fg +r "'bright color plus'"
-  __zx__test "\0001\0033[31m\0002'dark color minus'\0001\0033[0m\0002" \
-    --fg -red "'dark color minus'"
-  __zx__test "\0001\0033[91m\0002'bright color plus'\0001\0033[0m\0002" \
-    --fg +red "'bright color plus'"
-
-  echo "BASIC COLOR SHORT FORMS — +/-"
-  __zx__test "\0001\0033[31m\0002'dark color letters'\0001\0033[0m\0002" \
-    --fg dr "'dark color letters'"
-  __zx__test "\0001\0033[31m\0002'dark color letters'\0001\0033[0m\0002" \
-    --fg rd "'dark color letters'"
-  __zx__test "\0001\0033[31m\0002'COLOR LETTER'\0001\0033[0m\0002" \
-    --fg R "'COLOR LETTER'"
-  __zx__test "\0001\0033[31m\0002'DARK COLOR LETTERS'\0001\0033[0m\0002" \
-    --fg DR "'DARK COLOR LETTERS'"
-  __zx__test "\0001\0033[31m\0002'DARK COLOR LETTERS'\0001\0033[0m\0002" \
-    --fg RD "'DARK COLOR LETTERS'"
-  __zx__test "\0001\0033[31m\0002'lowercase color'\0001\0033[0m\0002" \
-    --fg red "'lowercase color'"
-  __zx__test "\0001\0033[31m\0002'UPPERCASE COLOR'\0001\0033[0m\0002" \
-    --fg RED "'UPPERCASE COLOR'"
-
-  echo "FOREGROUND BASIC COLORS"
-  __zx__test "\0001\0033[30m\0002'basic black fg'\0001\0033[0m\0002" \
-    --fg basic-black "'basic black fg'"
-  __zx__test "\0001\0033[31m\0002'basic red fg'\0001\0033[0m\0002" \
-    --fg basic-red "'basic red fg'"
-  __zx__test "\0001\0033[32m\0002'basic green fg'\0001\0033[0m\0002" \
-    --fg basic-green "'basic green fg'"
-  __zx__test "\0001\0033[33m\0002'basic yellow fg'\0001\0033[0m\0002" \
-    --fg basic-yellow "'basic yellow fg'"
-  __zx__test "\0001\0033[34m\0002'basic blue fg'\0001\0033[0m\0002" \
-    --fg basic-blue "'basic blue fg'"
-  __zx__test "\0001\0033[35m\0002'basic magenta fg'\0001\0033[0m\0002" \
-    --fg basic-magenta "'basic magenta fg'"
-  __zx__test "\0001\0033[36m\0002'basic cyan fg'\0001\0033[0m\0002" \
-    --fg basic-cyan "'basic cyan fg'"
-  __zx__test "\0001\0033[37m\0002'basic white fg'\0001\0033[0m\0002" \
-    --fg basic-white "'basic white fg'"
-
-  echo "FOREGROUND DARK COLORS"
-  __zx__test "\0001\0033[30m\0002'dark black fg'\0001\0033[0m\0002" \
-    --fg dark-black "'dark black fg'"
-  __zx__test "\0001\0033[31m\0002'dark red fg'\0001\0033[0m\0002" \
-    --fg dark-red "'dark red fg'"
-  __zx__test "\0001\0033[32m\0002'dark green fg'\0001\0033[0m\0002" \
-    --fg dark-green "'dark green fg'"
-  __zx__test "\0001\0033[33m\0002'dark yellow fg'\0001\0033[0m\0002" \
-    --fg dark-yellow "'dark yellow fg'"
-  __zx__test "\0001\0033[34m\0002'dark blue fg'\0001\0033[0m\0002" \
-    --fg dark-blue "'dark blue fg'"
-  __zx__test "\0001\0033[35m\0002'dark magenta fg'\0001\0033[0m\0002" \
-    --fg dark-magenta "'dark magenta fg'"
-  __zx__test "\0001\0033[36m\0002'dark cyan fg'\0001\0033[0m\0002" \
-    --fg dark-cyan "'dark cyan fg'"
-  __zx__test "\0001\0033[37m\0002'dark white fg'\0001\0033[0m\0002" \
-    --fg dark-white "'dark white fg'"
-
- echo "FOREGROUND LIGHT COLORS"
-  __zx__test "\0001\0033[90m\0002'light black fg'\0001\0033[0m\0002" \
-    --fg light-black "'light black fg'"
-  __zx__test "\0001\0033[91m\0002'light red fg'\0001\0033[0m\0002" \
-    --fg light-red "'light red fg'"
-  __zx__test "\0001\0033[92m\0002'light green fg'\0001\0033[0m\0002" \
-    --fg light-green "'light green fg'"
-  __zx__test "\0001\0033[93m\0002'light yellow fg'\0001\0033[0m\0002" \
-    --fg light-yellow "'light yellow fg'"
-  __zx__test "\0001\0033[94m\0002'light blue fg'\0001\0033[0m\0002" \
-    --fg light-blue "'light blue fg'"
-  __zx__test "\0001\0033[95m\0002'light magenta fg'\0001\0033[0m\0002" \
-    --fg light-magenta "'light magenta fg'"
-  __zx__test "\0001\0033[96m\0002'light cyan fg'\0001\0033[0m\0002" \
-    --fg light-cyan "'light cyan fg'"
-  __zx__test "\0001\0033[97m\0002'light white fg'\0001\0033[0m\0002" \
-    --fg light-white "'light white fg'"
-
- echo "FOREGROUND BRIGHT COLORS"
-  __zx__test "\0001\0033[90m\0002'bright black fg'\0001\0033[0m\0002" \
-    --fg bright-black "'bright black fg'"
-  __zx__test "\0001\0033[91m\0002'bright red fg'\0001\0033[0m\0002" \
-    --fg bright-red "'bright red fg'"
-  __zx__test "\0001\0033[92m\0002'bright green fg'\0001\0033[0m\0002" \
-    --fg bright-green "'bright green fg'"
-  __zx__test "\0001\0033[93m\0002'bright yellow fg'\0001\0033[0m\0002" \
-    --fg bright-yellow "'bright yellow fg'"
-  __zx__test "\0001\0033[94m\0002'bright blue fg'\0001\0033[0m\0002" \
-    --fg bright-blue "'bright blue fg'"
-  __zx__test "\0001\0033[95m\0002'bright magenta fg'\0001\0033[0m\0002" \
-    --fg bright-magenta "'bright magenta fg'"
-  __zx__test "\0001\0033[96m\0002'bright cyan fg'\0001\0033[0m\0002" \
-    --fg bright-cyan "'bright cyan fg'"
-  __zx__test "\0001\0033[97m\0002'bright white fg'\0001\0033[0m\0002" \
-    --fg bright-white "'bright white fg'"
-
-
-  echo "BACKGROUND BASIC COLORS"
-  __zx__test "\0001\0033[40m\0002'basic black bg'\0001\0033[0m\0002" \
-    --bg basic-black "'basic black bg'"
-  __zx__test "\0001\0033[41m\0002'basic red bg'\0001\0033[0m\0002" \
-    --bg basic-red "'basic red bg'"
-  __zx__test "\0001\0033[42m\0002'basic green bg'\0001\0033[0m\0002" \
-    --bg basic-green "'basic green bg'"
-  __zx__test "\0001\0033[43m\0002'basic yellow bg'\0001\0033[0m\0002" \
-    --bg basic-yellow "'basic yellow bg'"
-  __zx__test "\0001\0033[44m\0002'basic blue bg'\0001\0033[0m\0002" \
-    --bg basic-blue "'basic blue bg'"
-  __zx__test "\0001\0033[45m\0002'basic magenta bg'\0001\0033[0m\0002" \
-    --bg basic-magenta "'basic magenta bg'"
-  __zx__test "\0001\0033[46m\0002'basic cyan bg'\0001\0033[0m\0002" \
-    --bg basic-cyan "'basic cyan bg'"
-  __zx__test "\0001\0033[47m\0002'basic white bg'\0001\0033[0m\0002" \
-    --bg basic-white "'basic white bg'"
-
-
-  echo "BACKGROUND BRIGHT COLORS"
-  __zx__test "\0001\0033[100m\0002'bright black'\0001\0033[0m\0002" \
-    --bg bright-black "'bright black'"
-  __zx__test "\0001\0033[101m\0002'bright red'\0001\0033[0m\0002" \
-    --bg bright-red "'bright red'"
-  __zx__test "\0001\0033[102m\0002'bright green'\0001\0033[0m\0002" \
-    --bg bright-green "'bright green'"
-  __zx__test "\0001\0033[103m\0002'bright yellow'\0001\0033[0m\0002" \
-    --bg bright-yellow "'bright yellow'"
-  __zx__test "\0001\0033[104m\0002'bright blue'\0001\0033[0m\0002" \
-    --bg bright-blue "'bright blue'"
-  __zx__test "\0001\0033[105m\0002'bright magenta'\0001\0033[0m\0002" \
-    --bg bright-magenta "'bright magenta'"
-  __zx__test "\0001\0033[106m\0002'bright cyan'\0001\0033[0m\0002" \
-    --bg bright-cyan "'bright cyan'"
-  __zx__test "\0001\0033[107m\0002'bright white'\0001\0033[0m\0002" \
-    --bg bright-white "'bright white'"
-
-
-}
-
 
 __zx__clean() {
   unset ansi_sep
@@ -918,5 +764,3 @@ __zx__clean() {
   unset __zx__text_effect__code__
   unset __zx__text_effect__code_seq
 }
-
-__zx__tests | column -t -s "':"
