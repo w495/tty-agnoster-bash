@@ -1,0 +1,124 @@
+#!/usr/bin/env bash
+# shellcheck enable=all
+### Prompt components
+# Each component will draw itself,
+# and hide itself if no information needs to be shown
+
+# ---------------------------------------------------------------
+#     shfmt -ci -i 2 -sr -s -bn -kp -ln bash -d
+# ---------------------------------------------------------------
+
+source "$(dirname "${BASH_SOURCE[0]}")/utils.bash"
+source "$(dirname "${BASH_SOURCE[0]}")/segment.bash"
+
+source "$(dirname "${BASH_SOURCE[0]}")/parts/vcs.bash"
+
+# Context: user@hostname (who am I and where am I)
+__tty_ag_prompt_context() {
+  local user
+  user="$(whoami)"
+  if [[ ${user} != "${DEFAULT_USER}" || -n ${SSH_CLIENT} ]]; then
+    __tty_ag_prompt_segment_left black default "${user}@\h"
+  fi
+}
+
+__TTY_AG_LINE=1
+
+__tty_ag_prompt_line() {
+  __tty_ag_prompt_segment_left black orange "║ ${__TTY_AG_LINE} ║"
+  __TTY_AG_LINE=$((__TTY_AG_LINE + 1))
+}
+
+#Capturing start time in milliseconds
+__TTY_AG_SECOND="$(date '+%s%3N')"
+
+__tty_ag_prompt_seconds() {
+  local -i second
+  second="$(date '+%s%3N')"
+  ms_diff=$((second - __TTY_AG_SECOND))
+  sec_diff=$((ms_diff / 1000))
+  ms_part=$((ms_diff % 1000))
+  __tty_ag_prompt_segment_left black orange "|${sec_diff}.${ms_part}|"
+  __TTY_AG_SECOND="${second}"
+}
+
+# prints history followed by HH:MM, useful for remembering what
+# we did previously
+__tty_ag_prompt_history_time() {
+  history -a
+  history -c
+  history -r
+  __tty_ag_prompt_segment_left black default " \! (\A)"
+}
+
+__tty_ag_prompt_time() {
+  local _dt
+  _dt=$(date '+%H┋%M┋%S')
+  __tty_ag_prompt_segment_left black darkgray "${_dt}"
+}
+
+__tty_ag_prompt_date() {
+  local _dt
+  _dt=$(date '+%Y-%m-%d_%H-%M-%S-%N')
+  __tty_ag_prompt_segment_right black darkgray "${_dt}"
+}
+
+# Dir: current working directory
+__tty_ag_prompt_dir() {
+  __tty_ag_prompt_segment_left darkcyan darkgray '\w'
+}
+
+# Dir: current working directory
+__tty_ag_prompt_full_pwd() {
+  __tty_ag_prompt_segment_right black darkgray "#|${PWD}|"
+}
+
+# Status:
+# - was there an error
+# - am I root
+# - are there background jobs?
+__tty_ag_prompt_status() {
+  local symbols
+  local red yellow cyan
+  red=$(__tty_ag_fg_color red)
+  yellow=$(__tty_ag_fg_color yellow)
+  cyan=$(__tty_ag_fg_color cyan)
+
+  symbols=()
+  if [[ ${RETVAL} -ne 0 ]]; then
+    symbols+=("$(__tty_ag_format_head "${red}")✘")
+  fi
+  if [[ ${UID} -eq 0 ]]; then
+    symbols+=("$(__tty_ag_format_head "${yellow}")⚡")
+  fi
+  if [[ $(jobs -l | wc -l || true) -gt 0 ]]; then
+    symbols+=("$(__tty_ag_format_head "${cyan}")⚙")
+  fi
+  if [[ -n ${symbols[*]} ]]; then
+    __tty_ag_prompt_segment_left black default "${symbols}"
+  fi
+  true
+}
+
+######################################################################
+## Main prompt
+
+__tty_ag_build_prompt() {
+  __tty_ag_prompt_full_pwd
+  __tty_ag_prompt_date
+
+  __tty_ag_prompt_line
+  __tty_ag_prompt_history_time
+
+  __tty_ag_prompt_status
+
+  if [[ -z ${AG_NO_CONTEXT+x} ]]; then
+    __tty_ag_prompt_context
+  fi
+  __tty_ag_prompt_virtualenv
+  __tty_ag_prompt_dir
+  __tty_ag_prompt_arc
+  __tty_ag_prompt_git
+  __tty_ag_prompt_hg
+  __tty_ag_prompt_end
+}
