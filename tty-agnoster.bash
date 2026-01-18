@@ -58,11 +58,11 @@ __tty_ag_main() {
         shift 1
         ;;
       -s | --ls | --left-separator )
-        __TTY_AG_SEGMENT_SEPARATOR="${2}"
+        __TTY_AG_LEFT_SEGMENT_SEPARATOR="${2}"
         shift 2
         ;;
       -S | --rs | --right-separator)
-        __TTY_AG_RIGHT_SEPARATOR="${2}"
+        __TTY_AG_RIGHT_SEGMENT_SEPARATOR="${2}"
         shift 2
         ;;
       -r | --rp | --right-prompt)
@@ -116,6 +116,7 @@ __tty_ag_set_bash_prompt() {
   __TTY_AG_PS1R="$(__tty_ag_format_head "${te}")"
   __tty_ag_build_prompt
   PS1="${__TTY_AG_PS1L}"
+
   # rename console tab
   echo >&2 -en "\0033]0;${PWD}\a"
   PS1="${__TTY_AG_PS1L}"

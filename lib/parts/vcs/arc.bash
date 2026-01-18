@@ -14,16 +14,13 @@ __tty_ag_prompt_arc() {
     branch=$(arc info --json)
     branch=$(echo "${branch}" | jq -r '.branch')
 
-    local dirty dirty_flag
+    local dirty
     dirty=$(arc status --json | jq '.status | length')
 
     if [[ ${dirty} == 0 ]]; then
-      dirty_flag='<->'
-      __tty_ag_prompt_segment_left green black
+      __tty_ag_prompt_segment_left green black "${branch} (o_O)"
     else
-      dirty_flag='<+>'
-      __tty_ag_prompt_segment_left yellow black
+      __tty_ag_prompt_segment_left yellow black "${branch} (^_^)"
     fi
-      PS1L="${PS1L} ${branch} ${dirty_flag}"
   fi
 }

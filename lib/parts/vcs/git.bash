@@ -21,23 +21,24 @@ __tty_ag_git_stash_dirty() {
 
 # Git: branch/detached head, dirty status
 __tty_ag_prompt_git() {
-  local ref dirty
+  local ref dirty line
   if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
     # ZSH_THEME_GIT_PROMPT_DIRTY='±'
     dirty=$(__tty_ag_git_status_dirty)
     stash=$(__tty_ag_git_stash_dirty)
     ref=$(git symbolic-ref HEAD 2> /dev/null)
-    if $? -nq 0; then
+    if [[ -z "${ref}" ]]; then
      ref="- $(git describe --exact-match --tags HEAD 2> /dev/null)"
     fi
-    if $? -nq 0; then
+    if [[ -z "${ref}" ]]; then
      ref="- $(git show-ref --head -s --abbrev | head -n1 2> /dev/null || true)"
     fi
+    line="${ref/refs\/heads\//│╯ }${stash}${dirty}"
     if [[ -n ${dirty} ]]; then
-      __tty_ag_prompt_segment_left yellow black
+      __tty_ag_prompt_segment_left yellow black "${line} (o_O)"
     else
-      __tty_ag_prompt_segment_left green black
+      __tty_ag_prompt_segment_left green black "${line} (^_^)"
     fi
-    __TTY_AG_PS1L="${__TTY_AG_PS1L}${ref/refs\/heads\//│╯ }${stash}${dirty}"
+
   fi
 }
