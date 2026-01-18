@@ -47,77 +47,77 @@ __tty_ag_main() {
 
   while [[ $# -gt 0 ]]; do
     case ${1} in
-    -U | --user)
-      __TTY_AG_DEFAULT_USER="${2}"
-      shift 2
-      ;;
-    -d | --debug)
-      __TTY_AG_DEBUG_MODE=true
-      __TTY_AG_VERBOSE_MODE=true
-      shift 1
-      ;;
-    -v | --verbose)
-      __TTY_AG_VERBOSE_MODE=true
-      shift 1
-      ;;
-    -s | --cs | --separator | --common-separator)
-      __TTY_AG_SEGMENT_SEPARATOR_LEFT="${2}"
-      __TTY_AG_SEGMENT_SEPARATOR_RIGHT="${2}"
-      __TTY_AG_SEGMENT_SEPARATOR_BOTTOM="${2}"
-      __TTY_AG_SEGMENT_SEPARATOR_TOP="${2}"
-      __TTY_AG_SEGMENT_SEPARATOR_UNDER="${2}"
-      shift 2
-      ;;
-    --ls | --left-separator)
-      __TTY_AG_SEGMENT_SEPARATOR_LEFT="${2}"
-      shift 2
-      ;;
-    --rs | --right-separator)
-      __TTY_AG_SEGMENT_SEPARATOR_RIGHT="${2}"
-      shift 2
-      ;;
-    --bs | --bottom-separator)
-      __TTY_AG_SEGMENT_SEPARATOR_BOTTOM="${2}"
-      shift 2
-      ;;
-    --ts | --top-separator)
-      __TTY_AG_SEGMENT_SEPARATOR_TOP="${2}"
-      shift 2
-      ;;
-    --us | --under-separator)
-      __TTY_AG_SEGMENT_SEPARATOR_UNDER="${2}"
-      shift 2
-      ;;
-    -r | --rp | --right-prompt)
-      __TTY_AG_RIGHT_PROMPT=true
-      __TTY_AG_RIGHT_WINDOW=false
-      shift 1
-      ;;
-    -R | --rw | --right-window)
-      __TTY_AG_RIGHT_PROMPT=false
-      __TTY_AG_RIGHT_WINDOW=true
-      shift 1
-      ;;
-    -b | --bw | --bottom-window)
-      __TTY_AG_BOTTOM_WINDOW=true
-      shift 1
-      ;;
-    -t | --tw | --top-window)
-      __TTY_AG_TOP_WINDOW=true
-      shift 1
-      ;;
-    -u | --up | --under-prompt)
-      __TTY_AG_UNDER_PROMPT=true
-      shift 1
-      ;;
-    '--' | '')
-      shift 1
-      break
-      ;;
-    *)
-      echo "Unknown parameter '${1}'." >&2
-      shift 1
-      ;;
+      -U | --user)
+        __TTY_AG_DEFAULT_USER="${2}"
+        shift 2
+        ;;
+      -d | --debug)
+        __TTY_AG_DEBUG_MODE=true
+        __TTY_AG_VERBOSE_MODE=true
+        shift 1
+        ;;
+      -v | --verbose)
+        __TTY_AG_VERBOSE_MODE=true
+        shift 1
+        ;;
+      -s | --cs | --separator | --common-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_LEFT="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_RIGHT="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_BOTTOM="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_TOP="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_UNDER="${2}"
+        shift 2
+        ;;
+      --ls | --left-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_LEFT="${2}"
+        shift 2
+        ;;
+      --rs | --right-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_RIGHT="${2}"
+        shift 2
+        ;;
+      --bs | --bottom-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_BOTTOM="${2}"
+        shift 2
+        ;;
+      --ts | --top-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_TOP="${2}"
+        shift 2
+        ;;
+      --us | --under-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_UNDER="${2}"
+        shift 2
+        ;;
+      -r | --rp | --right-prompt)
+        __TTY_AG_RIGHT_PROMPT=true
+        __TTY_AG_RIGHT_WINDOW=false
+        shift 1
+        ;;
+      -R | --rw | --right-window)
+        __TTY_AG_RIGHT_PROMPT=false
+        __TTY_AG_RIGHT_WINDOW=true
+        shift 1
+        ;;
+      -b | --bw | --bottom-window)
+        __TTY_AG_BOTTOM_WINDOW=true
+        shift 1
+        ;;
+      -t | --tw | --top-window)
+        __TTY_AG_TOP_WINDOW=true
+        shift 1
+        ;;
+      -u | --up | --under-prompt)
+        __TTY_AG_UNDER_PROMPT=true
+        shift 1
+        ;;
+      '--' | '')
+        shift 1
+        break
+        ;;
+      *)
+        echo "Unknown parameter '${1}'." >&2
+        shift 1
+        ;;
     esac
   done
 
