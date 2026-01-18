@@ -5,10 +5,10 @@
 #     shfmt -ci -i 2 -sr -s -bn -kp -ln bash -d
 # ---------------------------------------------------------------
 
-VERBOSE_MODE=false
+__TTY_AG_DEBUG_MODE=false
 
 __tty_ag_format_debug() {
-  if [[ ${VERBOSE_MODE} == true ]]; then
+  if [[ ${__TTY_AG_DEBUG_MODE} == true ]]; then
     local -ir offset=1
     local -r func="${FUNCNAME[${offset}]}"
     local -r line="${BASH_LINENO[${offset}]}"
@@ -29,9 +29,9 @@ __tty_ag_format_heads() {
     seq="${seq}${codes[${i}]}"
   done
   __tty_ag_format_debug "\\e['${seq}'m"
-  echo -ne "\[\0033[${seq}m\]"
+  printf "%b" "\[\0033[${seq}m\]"
 }
 
 __tty_ag_format_head() {
-  echo -ne "\[\0033[${1}m\]"
+  printf "%b" "\[\0033[${1}m\]"
 }

@@ -7,6 +7,8 @@
 
 source "$(dirname "${BASH_SOURCE[0]}")/../../segment.bash"
 
+__TTY_AG_CURRENT_LBG=NONE
+
 # Mercurial: clean, modified and uncommited files
 __tty_ag_prompt_hg() {
   local rev st branch
@@ -22,9 +24,9 @@ __tty_ag_prompt_hg() {
         st='±'
       else
         # if working copy is clean
-        __tty_ag_prompt_segment_left green black "${CURRENT_LBG}"
+        __tty_ag_prompt_segment_left green black "${__TTY_AG_CURRENT_LBG}"
       fi
-      PS1L="${PS1L}$(hg prompt "☿ {rev}@{branch}") ${st}"
+      __TTY_AG_PS1L="${__TTY_AG_PS1L}$(hg prompt "hg {rev}@{branch}") ${st}"
     else
       st=""
       rev=$(hg id -n 2> /dev/null | sed 's/[^-0-9]//g' || true)
@@ -36,9 +38,9 @@ __tty_ag_prompt_hg() {
         __tty_ag_prompt_segment_left yellow black
         st='±'
       else
-        __tty_ag_prompt_segment_left green black "${CURRENT_LBG}"
+        __tty_ag_prompt_segment_left green black "${__TTY_AG_CURRENT_LBG}"
       fi
-      PS1L="${PS1L}☿ ${rev}@${branch} ${st}"
+      __TTY_AG_PS1L="${__TTY_AG_PS1L}hg ${rev}@${branch} ${st}"
     fi
   fi
 }

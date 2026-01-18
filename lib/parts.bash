@@ -13,11 +13,14 @@ source "$(dirname "${BASH_SOURCE[0]}")/segment.bash"
 
 source "$(dirname "${BASH_SOURCE[0]}")/parts/vcs.bash"
 
+export __TTY_AG_DEFAULT_USER='_'
+export __TTY_AG_RETVAL=$?
+
 # Context: user@hostname (who am I and where am I)
 __tty_ag_prompt_context() {
   local user
   user="$(whoami)"
-  if [[ ${user} != "${DEFAULT_USER}" || -n ${SSH_CLIENT} ]]; then
+  if [[ ${user} != "${__TTY_AG_DEFAULT_USER}" || -n ${SSH_CLIENT} ]]; then
     __tty_ag_prompt_segment_left black default "${user}@\h"
   fi
 }
@@ -85,7 +88,7 @@ __tty_ag_prompt_status() {
   cyan=$(__tty_ag_fg_color cyan)
 
   symbols=()
-  if [[ ${RETVAL} -ne 0 ]]; then
+  if [[ ${__TTY_AG_RETVAL} -ne 0 ]]; then
     symbols+=("$(__tty_ag_format_head "${red}")✘")
   fi
   if [[ ${UID} -eq 0 ]]; then
