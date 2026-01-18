@@ -6,7 +6,6 @@
 # ---------------------------------------------------------------
 
 __TTY_AG_DEBUG_MODE=false
-__TTY_AG_LEFT_SEGMENT_SEPARATOR="|"
 
 source "$(dirname "${BASH_SOURCE[0]}")/utils.bash"
 
@@ -21,15 +20,55 @@ __tty_ag_segment_debug() {
   fi
 }
 
+
+# End the prompt, closing any open segments
+__tty_ag_prompt_start() {
+  local position="${1}"
+  local prompt_ref="__TTY_AG_PS1_${position}"
+  local current_bg_name_ref="__TTY_AG_CURRENT_BG_${position}"
+  local segment_separator_ref="__TTY_AG_SEGMENT_SEPARATOR_${position}"
+  local prompt="${!prompt_ref}"
+  local current_bg_name="${!current_bg_name_ref}"
+  local segment_separator="${!segment_separator_ref}"
+
+  local __tty_ag_text_effect
+  __tty_ag_text_effect reset > /dev/null
+
+  local reset_format
+  reset_format="$(__tty_ag_format_head "${__tty_ag_text_effect}")"
+
+  eval "${prompt_ref}='${reset_format}'"
+  eval "${current_bg_name_ref}='NONE'"
+}
+
+__tty_ag_prompt_start_all() {
+  __tty_ag_prompt_start 'LEFT'
+  __tty_ag_prompt_start 'RIGHT'
+  __tty_ag_prompt_start 'BOTTOM'
+  __tty_ag_prompt_start 'TOP'
+  __tty_ag_prompt_start 'UNDER'
+}
+
+
+
 # Begin a segment
 # Takes two arguments, background and foreground. Both can be omitted,
 # rendering default background/foreground.
 __tty_ag_segment() {
-  local current_bg_name="${1}"
-  local prompt="${2}"
-  local bg_name="${3}"
-  local fg_name="${4}"
-  local text="${5}"
+  local position="${1}"
+  local prompt_ref="__TTY_AG_PS1_${position}"
+  local current_bg_name_ref="__TTY_AG_CURRENT_BG_${position}"
+  local segment_separator_ref="__TTY_AG_SEGMENT_SEPARATOR_${position}"
+  local prompt="${!prompt_ref}"
+  local current_bg_name="${!current_bg_name_ref}"
+  local segment_separator="${!segment_separator_ref}"
+
+  shift
+  __tty_ag_segment_debug "bg_name=${1} fg_name=${2} text='${3}'"
+
+  local bg_name="${1}"
+  local fg_name="${2}"
+  local text="${3}"
 
   __tty_ag_segment_debug "Segment:"
   __tty_ag_segment_debug "current_bg_name=${current_bg_name}"
@@ -54,7 +93,9 @@ __tty_ag_segment() {
     codes=("${codes[@]}" "${fg_code}")
     __tty_ag_segment_debug "Added ${fg_code} as foreground to codes"
   fi
-  if [[ ${current_bg_name} != NONE && ${bg_name} != "${current_bg_name}" ]]; then
+  if [[
+    ${current_bg_name} != 'NONE' && ${bg_name} != "${current_bg_name}"
+  ]]; then
     local -a intermediate=(
       "$(__tty_ag_fg_color "${current_bg_name}")"
       "$(__tty_ag_bg_color "${bg_name}")"
@@ -62,7 +103,7 @@ __tty_ag_segment() {
     local pre_prompt
     pre_prompt=$(__tty_ag_format_heads "${intermediate[@]}")
     __tty_ag_segment_debug "pre prompt ${pre_prompt}"
-    prompt="${prompt}${pre_prompt}${__TTY_AG_LEFT_SEGMENT_SEPARATOR}"
+    prompt="${prompt}${pre_prompt}${segment_separator}"
   else
     __tty_ag_segment_debug "no current BG, codes is ${codes[*]}"
   fi
@@ -73,49 +114,44 @@ __tty_ag_segment() {
   if [[ -n ${text} ]]; then
     prompt="${prompt}${text}"
   fi
-  echo -en "${prompt}"
+  eval "${prompt_ref}='${prompt}'"
+  eval "${current_bg_name_ref}='${bg_name}'"
 }
 
-__tty_ag_prompt_segment_left() {
-  local bg_name="${1}"
-  __tty_ag_segment_debug "bg_name=${1} fg_name=${2} text='${3}'"
-  __TTY_AG_PS1L=$(
-    __tty_ag_segment "${__TTY_AG_CURRENT_LBG}" "${__TTY_AG_PS1L}" "${@}"
-  )
-  __TTY_AG_CURRENT_LBG="${bg_name}"
-}
-
-# Begin a segment on the right
-# Takes two arguments, background and foreground. Both can be omitted,
-# rendering default background/foreground.
-__tty_ag_prompt_segment_right() {
-  __tty_ag_segment_debug "bg_name=${1} fg_name=${2} text='${3}'"
-  __TTY_AG_PS1R=$(
-    __tty_ag_segment "${__TTY_AG_CURRENT_RBG}" "${__TTY_AG_PS1R}" "${@}"
-  )
-  __TTY_AG_CURRENT_RBG=${bg_name}
-}
 
 # End the prompt, closing any open segments
 __tty_ag_prompt_end() {
-  if [[ -n ${__TTY_AG_CURRENT_LBG} ]]; then
-    local -a codes=(
-      "$(__tty_ag_text_effect reset)"
-      "$(__tty_ag_fg_color "${__TTY_AG_CURRENT_LBG}")"
-    )
+  local position="${1}"
+  local prompt_ref="__TTY_AG_PS1_${position}"
+  local current_bg_name_ref="__TTY_AG_CURRENT_BG_${position}"
+  local segment_separator_ref="__TTY_AG_SEGMENT_SEPARATOR_${position}"
+  local prompt="${!prompt_ref}"
+  local current_bg_name="${!current_bg_name_ref}"
+  local segment_separator="${!segment_separator_ref}"
+
+  local __tty_ag_text_effect
+  __tty_ag_text_effect reset > /dev/null
+  local reset_te="${__tty_ag_text_effect}"
+
+  if [[ -n ${current_bg_name} ]]; then
+    local __tty_ag_fg_color
+    __tty_ag_fg_color "${current_bg_name}" > /dev/null
+    local -a codes=("${reset_te}" "${__tty_ag_fg_color}")
     local heads
     heads=$(__tty_ag_format_heads "${codes[@]}")
-    __TTY_AG_PS1L="${__TTY_AG_PS1L}${heads}${__TTY_AG_LEFT_SEGMENT_SEPARATOR}"
+    prompt="${prompt}${heads}${segment_separator}"
   fi
-  local -a reset=(
-    "$(__tty_ag_text_effect reset)"
-  )
   local reset_format
-  reset_format=$(__tty_ag_format_heads "${reset[@]}")
+  reset_format="$(__tty_ag_format_head "${reset_te}")"
 
-  __TTY_AG_PS1L="${__TTY_AG_PS1L}${reset_format}"
-  __TTY_AG_PS1R="${__TTY_AG_PS1R}${reset_format}"
+  eval "${prompt_ref}='${prompt}${reset_format}'"
+  eval "${current_bg_name_ref}=''"
+}
 
-  __TTY_AG_CURRENT_LBG=''
-  __TTY_AG_CURRENT_RBG=''
+__tty_ag_prompt_end_all() {
+  __tty_ag_prompt_end 'LEFT'
+  __tty_ag_prompt_end 'RIGHT'
+  __tty_ag_prompt_end 'BOTTOM'
+  __tty_ag_prompt_end 'TOP'
+  __tty_ag_prompt_end 'UNDER'
 }

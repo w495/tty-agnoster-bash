@@ -4,7 +4,7 @@
 __tty_ag_cursor_row() {
   local row col
   IFS=';' read -p $'\e[6n' -d R -rs row col \
-                                            || echo "failed with error: $? ; ${row} ${col} "
+  || echo "failed with error: $? ; ${row} ${col} "
   row="${row:2}"
   echo "${row}"
 }

@@ -8,55 +8,56 @@
 __tty_ag_bg_color() {
   case "$1" in
     black)
-      echo 40
+      __tty_ag_bg_color=40
       ;;
     darkred)
-      echo 41
+      __tty_ag_bg_color=41
       ;;
     darkgreen)
-      echo 42
+      __tty_ag_bg_color=42
       ;;
     yellow)
-      echo 43
+      __tty_ag_bg_color=43
       ;;
     darkblue)
-      echo 44
+      __tty_ag_bg_color=44
       ;;
     darkmagenta)
-      echo 45
+      __tty_ag_bg_color=45
       ;;
     darkcyan)
-      echo 46
+      __tty_ag_bg_color=46
       ;;
     white)
-      echo 47
+      __tty_ag_bg_color=47
       ;;
     darkgray)
-      echo 100
+      __tty_ag_bg_color=100
       ;;
     red)
-      echo 101
+      __tty_ag_bg_color=101
       ;;
     green)
-      echo 102
+      __tty_ag_bg_color=102
       ;;
     orange)
-      echo 103
+      __tty_ag_bg_color=103
       ;;
     blue)
-      echo 104
+      __tty_ag_bg_color=104
       ;;
     magenta)
-      echo 105
+      __tty_ag_bg_color=105
       ;;
     cyan)
-      echo 106
+      __tty_ag_bg_color=106
       ;;
     gray)
-      echo 107
+      __tty_ag_bg_color=107
       ;;
     *)
-      echo
+      __tty_ag_bg_color=''
       ;;
   esac
+  echo "${__tty_ag_bg_color}"
 }

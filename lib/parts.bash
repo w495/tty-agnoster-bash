@@ -21,14 +21,14 @@ __tty_ag_prompt_context() {
   local user
   user="$(whoami)"
   if [[ ${user} != "${__TTY_AG_DEFAULT_USER}" || -n ${SSH_CLIENT} ]]; then
-    __tty_ag_prompt_segment_left black default "${user}@\h"
+    __tty_ag_segment "${1}" black default "${user}@\h"
   fi
 }
 
 __TTY_AG_LINE=1
 
 __tty_ag_prompt_line() {
-  __tty_ag_prompt_segment_left black orange "║ ${__TTY_AG_LINE} ║"
+  __tty_ag_segment "${1}" black orange "║ ${__TTY_AG_LINE} ║"
   __TTY_AG_LINE=$((__TTY_AG_LINE + 1))
 }
 
@@ -41,7 +41,7 @@ __tty_ag_prompt_seconds() {
   ms_diff=$((second - __TTY_AG_SECOND))
   sec_diff=$((ms_diff / 1000))
   ms_part=$((ms_diff % 1000))
-  __tty_ag_prompt_segment_left black orange "|${sec_diff}.${ms_part}|"
+  __tty_ag_segment "${1}" black orange "|${sec_diff}.${ms_part}|"
   __TTY_AG_SECOND="${second}"
 }
 
@@ -51,29 +51,29 @@ __tty_ag_prompt_history_time() {
   history -a
   history -c
   history -r
-  __tty_ag_prompt_segment_left black default " \! (\A)"
+  __tty_ag_segment "${1}" black default " \! (\A)"
 }
 
 __tty_ag_prompt_time() {
   local _dt
   _dt=$(date '+%H┋%M┋%S')
-  __tty_ag_prompt_segment_left black darkgray "${_dt}"
+  __tty_ag_segment "${1}" black darkgray "${_dt}"
 }
 
 __tty_ag_prompt_date() {
   local _dt
   _dt=$(date '+%Y-%m-%d_%H-%M-%S-%N')
-  __tty_ag_prompt_segment_right black darkgray "${_dt}"
+  __tty_ag_segment "${1}" black darkgray "${_dt}"
 }
 
 # Dir: current working directory
 __tty_ag_prompt_dir() {
-  __tty_ag_prompt_segment_left darkcyan darkgray '\w'
+  __tty_ag_segment "${1}" darkcyan darkgray '\w'
 }
 
 # Dir: current working directory
 __tty_ag_prompt_full_pwd() {
-  __tty_ag_prompt_segment_right black darkgray "#|${PWD}|"
+  __tty_ag_segment "${1}" black darkgray "#|${PWD}|"
 }
 
 # Status:
@@ -98,7 +98,7 @@ __tty_ag_prompt_status() {
     symbols+=("$(__tty_ag_format_head "${cyan}")⚙")
   fi
   if [[ -n ${symbols[*]} ]]; then
-    __tty_ag_prompt_segment_left black default "${symbols}"
+    __tty_ag_segment "${1}" black default "${symbols}"
   fi
   true
 }
@@ -107,21 +107,25 @@ __tty_ag_prompt_status() {
 ## Main prompt
 
 __tty_ag_build_prompt() {
-  __tty_ag_prompt_full_pwd
-  __tty_ag_prompt_date
 
-  __tty_ag_prompt_line
-  __tty_ag_prompt_history_time
+  __tty_ag_prompt_start_all
 
-  __tty_ag_prompt_status
+  __tty_ag_prompt_full_pwd 'RIGHT'
+  __tty_ag_prompt_date  'RIGHT'
+
+  __tty_ag_prompt_line  'LEFT'
+  __tty_ag_prompt_history_time  'LEFT'
+
+  __tty_ag_prompt_status  'LEFT'
 
   if [[ -z ${AG_NO_CONTEXT+x} ]]; then
-    __tty_ag_prompt_context
+    __tty_ag_prompt_context 'LEFT'
   fi
-  __tty_ag_prompt_virtualenv
-  __tty_ag_prompt_dir
-  __tty_ag_prompt_arc
-  __tty_ag_prompt_git
-  __tty_ag_prompt_hg
-  __tty_ag_prompt_end
+  __tty_ag_prompt_virtualenv  'RIGHT'
+  __tty_ag_prompt_dir 'LEFT'
+  __tty_ag_prompt_arc 'LEFT'
+  __tty_ag_prompt_git 'LEFT'
+  __tty_ag_prompt_hg  'LEFT'
+
+  __tty_ag_prompt_end_all
 }

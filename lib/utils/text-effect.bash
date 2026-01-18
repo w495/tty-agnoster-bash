@@ -8,28 +8,29 @@
 __tty_ag_text_effect() {
   case "$1" in
     reset)
-      echo 0
+      __tty_ag_text_effect=0
       ;;
     bold)
-      echo 1
+      __tty_ag_text_effect=1
       ;;
     dim)
-      echo 2
+      __tty_ag_text_effect=2
       ;;
     italic)
-      echo 3
+      __tty_ag_text_effect=3
       ;;
     underline)
-      echo 4
+      __tty_ag_text_effect=4
       ;;
     reverse)
-      echo 7
+      __tty_ag_text_effect=7
       ;;
     del)
-      echo 9
+      __tty_ag_text_effect=9
       ;;
     *)
-      echo
+      __tty_ag_text_effect=''
       ;;
   esac
+  echo "${__tty_ag_text_effect}"
 }
