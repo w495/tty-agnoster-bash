@@ -63,8 +63,12 @@ __tty_ag_segment() {
   local current_bg_name="${!current_bg_name_ref}"
   local segment_separator="${!segment_separator_ref}"
 
+  __tty_ag_segment_debug "&prompt=${prompt_ref}"
+  __tty_ag_segment_debug "&current_bg_name=${current_bg_name_ref}"
+  __tty_ag_segment_debug "&segment_separator=${segment_separator_ref}"
+
   shift
-  __tty_ag_segment_debug "bg_name=${1} fg_name=${2} text='${3}'"
+  __tty_ag_segment_debug "1=${1} 2=${2} 3=${3}"
 
   local bg_name="${1}"
   local fg_name="${2}"
@@ -81,24 +85,35 @@ __tty_ag_segment() {
   local -i fg_code
   local -a codes
 
-  codes=("$(__tty_ag_text_effect reset)")
+  local __tty_ag_text_effect
+  local __tty_ag_fg_color
+  local __tty_ag_bg_color
 
-  if [[ -n ${bg_name}   ]]; then
-    bg_code=$(__tty_ag_bg_color "${bg_name}")
-    codes=("${codes[@]}" "${bg_code}")
+  __tty_ag_text_effect reset > /dev/null
+  local reset_te="${__tty_ag_text_effect}"
+
+  codes=(
+    "${reset_te}"
+  )
+
+  if [[ -n ${bg_name} ]]; then
+    __tty_ag_bg_color "${bg_name}" > /dev/null
+    codes=("${codes[@]}" "${__tty_ag_bg_color}")
     __tty_ag_segment_debug "Added ${bg_code} as background to codes"
   fi
   if [[ -n ${fg_name}   ]]; then
-    fg_code=$(__tty_ag_fg_color "${fg_name}")
-    codes=("${codes[@]}" "${fg_code}")
+    __tty_ag_fg_color "${fg_name}" > /dev/null
+    codes=("${codes[@]}" "${__tty_ag_fg_color}")
     __tty_ag_segment_debug "Added ${fg_code} as foreground to codes"
   fi
   if [[
     ${current_bg_name} != 'NONE' && ${bg_name} != "${current_bg_name}"
   ]]; then
+    __tty_ag_fg_color "${current_bg_name}" > /dev/null
+    __tty_ag_bg_color "${bg_name}" > /dev/null
     local -a intermediate=(
-      "$(__tty_ag_fg_color "${current_bg_name}")"
-      "$(__tty_ag_bg_color "${bg_name}")"
+      "${__tty_ag_fg_color}"
+      "${__tty_ag_bg_color}"
     )
     local pre_prompt
     pre_prompt=$(__tty_ag_format_heads "${intermediate[@]}")
