@@ -9,10 +9,8 @@ __TTY_AG_DEBUG_MODE=false
 
 source "$(dirname "${BASH_SOURCE[0]}")/utils.bash"
 
-
 __tty_ag_text_effect reset > /dev/null
 __TTY_AG_TEXT_EFFECT_RESET="${__tty_ag_text_effect}"
-
 
 __tty_ag_segment_debug() {
   if [[ ${__TTY_AG_DEBUG_MODE} == true ]]; then
@@ -21,12 +19,10 @@ __tty_ag_segment_debug() {
     local -r line="${BASH_LINENO[${offset}]}"
 
     printf -v x "%q" "${@}"
-    printf "%s %s\n"  "${func}[${line}]" "${x}" >&2
+    printf "%s %s\n" "${func}[${line}]" "${x}" >&2
   fi
 }
 
-
-# End the prompt, closing any open segments
 __tty_ag_prompt_start() {
   local position="${1}"
   local prompt_ref="__TTY_AG_PS1_${position}"
@@ -53,8 +49,6 @@ __tty_ag_prompt_start_all() {
   __tty_ag_prompt_start 'TOP'
   __tty_ag_prompt_start 'UNDER'
 }
-
-
 
 # Begin a segment
 # Takes two arguments, background and foreground. Both can be omitted,
@@ -103,9 +97,9 @@ __tty_ag_segment() {
     codes=("${codes[@]}" "${__tty_ag_fg_color}")
     __tty_ag_segment_debug "Added ${__tty_ag_fg_color} as fg to codes"
   fi
-  if [[
-    ${current_bg_name} != 'NONE' && ${bg_name} != "${current_bg_name}"
-  ]]; then
+  if [[ 
+    ${current_bg_name} != 'NONE' && ${bg_name} != "${current_bg_name}" ]] \
+    ; then
     __tty_ag_fg_color "${current_bg_name}" > /dev/null
     __tty_ag_bg_color "${bg_name}" > /dev/null
     local -a intermediate=(
@@ -129,7 +123,6 @@ __tty_ag_segment() {
   eval "${prompt_ref}='${prompt}'"
   eval "${current_bg_name_ref}='${bg_name}'"
 }
-
 
 # End the prompt, closing any open segments
 __tty_ag_prompt_end() {

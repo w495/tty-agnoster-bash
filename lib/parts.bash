@@ -111,21 +111,21 @@ __tty_ag_build_prompt() {
   __tty_ag_prompt_start_all
 
   __tty_ag_prompt_full_pwd 'RIGHT'
-  __tty_ag_prompt_date  'RIGHT'
+  __tty_ag_prompt_date 'RIGHT'
 
-  __tty_ag_prompt_line  'LEFT'
-  __tty_ag_prompt_history_time  'LEFT'
+  __tty_ag_prompt_line 'LEFT'
+  __tty_ag_prompt_history_time 'LEFT'
 
-  __tty_ag_prompt_status  'LEFT'
+  __tty_ag_prompt_status 'LEFT'
 
   if [[ -z ${AG_NO_CONTEXT+x} ]]; then
     __tty_ag_prompt_context 'LEFT'
   fi
-  __tty_ag_prompt_virtualenv  'RIGHT'
+  __tty_ag_prompt_virtualenv 'RIGHT'
   __tty_ag_prompt_dir 'LEFT'
   __tty_ag_prompt_arc 'LEFT'
   __tty_ag_prompt_git 'LEFT'
-  __tty_ag_prompt_hg  'LEFT'
+  __tty_ag_prompt_hg 'LEFT'
 
   __tty_ag_prompt_end_all
 }

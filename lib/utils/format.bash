@@ -14,7 +14,7 @@ __tty_ag_format_debug() {
     local -r line="${BASH_LINENO[${offset}]}"
 
     printf -v x "%q" "${@}"
-    printf "%s %s\n"  "${func}[${line}]" "${x}" >&2
+    printf "%s %s\n" "${func}[${line}]" "${x}" >&2
   fi
 }
 
@@ -35,7 +35,6 @@ __tty_ag_format_heads() {
 __tty_ag_format_head() {
   printf "%b" "\[\0033[${1}m\]"
 }
-
 
 __tty_ag_format_reset() {
   printf "%b" "\[\0033[0m\]"

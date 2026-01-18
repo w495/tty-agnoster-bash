@@ -1,5 +1,6 @@
 # tty-agnoster-bash
-Agnoster Theme for Bash that works at evil TTY (1-6). 
+
+Agnoster Theme for Bash that works at evil TTY (1-6).
 A Powerline-inspired theme for BASH.
 
 https://wiki.archlinux.org/title/User:Grufo/Color_System's_Bash_Prompt
@@ -8,19 +9,17 @@ https://wiki.archlinux.org/title/User:Grufo/Color_System's_Bash_Prompt
 
 # Origins
 
-* ZSH Аgnoster's Theme 
-  *  https://gist.github.com/3712874
+* ZSH Аgnoster's Theme
+    * https://gist.github.com/3712874
 * Converted from ZSH theme _[by Kenny Root]_
-  *  https://gist.github.com/kruton/8345450
+    * https://gist.github.com/kruton/8345450
 * As original see agnoster-bash _[by Erik Selberg]_
-  * https://github.com/speedenator/agnoster-bash
+    * https://github.com/speedenator/agnoster-bash
 * Converted for TTY by @w495
-  * https://github.com/w495/tty-agnoster-bash  
-
+    * https://github.com/w495/tty-agnoster-bash
 
 Also See alternative `agnoster_bash` _[by H@di]_
 → https://github.com/hadisfr/agnoster_bash
-
 
 # CHANGES
 
