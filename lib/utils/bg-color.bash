@@ -6,6 +6,7 @@
 # ---------------------------------------------------------------
 
 __tty_ag_bg_color() {
+  # It uses global var to reduce subshells
   case "$1" in
     black)
       __tty_ag_bg_color=40

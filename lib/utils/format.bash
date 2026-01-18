@@ -35,3 +35,12 @@ __tty_ag_format_heads() {
 __tty_ag_format_head() {
   printf "%b" "\[\0033[${1}m\]"
 }
+
+
+__tty_ag_format_reset() {
+  printf "%b" "\[\0033[0m\]"
+}
+
+__tty_ag_format_tail() {
+  printf "%b" "\[\0033[0m\]"
+}

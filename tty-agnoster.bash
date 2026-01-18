@@ -17,8 +17,8 @@ __TTY_AG_EXPERIMENTAL_PROMPTS=false
 
 
 
-__TTY_AG_SEGMENT_SEPARATOR_LEFT="█▒░"
-__TTY_AG_SEGMENT_SEPARATOR_RIGHT="░▒█"
+__TTY_AG_SEGMENT_SEPARATOR_LEFT="█▒░ "
+__TTY_AG_SEGMENT_SEPARATOR_RIGHT=" ░▒█"
 __TTY_AG_SEGMENT_SEPARATOR_UNDER="█▒░"
 __TTY_AG_SEGMENT_SEPARATOR_BOTTOM="#"
 __TTY_AG_SEGMENT_SEPARATOR_TOP="#"
@@ -124,7 +124,7 @@ __tty_ag_main() {
   done
 
   if ${__TTY_AG_VERBOSE_MODE}; then
-    printf "%b" "\0033[41m|options = ${opts}|\0033[0m\n"
+    printf "%b" "\0033[41m# options = ${opts}|\0033[0m\n"
   fi
 
   PROMPT_COMMAND=__tty_ag_prompt_command

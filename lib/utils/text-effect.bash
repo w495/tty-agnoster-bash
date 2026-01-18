@@ -6,6 +6,7 @@
 # ---------------------------------------------------------------
 
 __tty_ag_text_effect() {
+  # It uses global var to reduce subshells
   case "$1" in
     reset)
       __tty_ag_text_effect=0
