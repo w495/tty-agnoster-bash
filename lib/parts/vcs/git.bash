@@ -26,9 +26,9 @@ __tty_ag_prompt_git() {
     fi
     line="${ref/refs\/heads\//}${stash}"
     if [[ -n ${dirty} ]]; then
-      __tty_ag_segment "${pos}" yellow black "(@_@)>${line}"
+      __tty_ag_segment "${pos}" yellow black "(@_@) ${line}"
     else
-      __tty_ag_segment "${pos}" green black "(^_^)>${line}"
+      __tty_ag_segment "${pos}" green black "(^_^) ${line}"
     fi
   fi
 }

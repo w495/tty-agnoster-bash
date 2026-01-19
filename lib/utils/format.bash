@@ -29,17 +29,17 @@ __tty_ag_format_heads() {
     seq="${seq}${codes[${i}]}"
   done
   __tty_ag_format_debug "\\e['${seq}'m"
-  printf "%b" "\[\0033[${seq}m\]"
+  printf "%b" "\0001\0033[${seq}m\0002"
 }
 
 __tty_ag_format_head() {
-  printf "%b" "\[\0033[${1}m\]"
+  printf "%b" "\0001\0033[${1}m\0002"
 }
 
 __tty_ag_format_reset() {
-  printf "%b" "\[\0033[0m\]"
+  printf "%b" "\0001\0033[0m\0002"
 }
 
 __tty_ag_format_tail() {
-  printf "%b" "\[\0033[0m\]"
+  printf "%b" "\0001\0033[0m\0002"
 }

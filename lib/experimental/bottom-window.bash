@@ -8,7 +8,7 @@ __tty_ag_bottom_window() {
   # Move cursor to last line in your screen
   tput cup $((LINES - 2)) 0
   # shellcheck disable=SC2312
-  printf '~%.0s\n' $(seq 1 "${COLUMNS}")
+  printf '.%.0s' $(seq 1 "${COLUMNS}")
   echo "${1}"
   # Move cursor to home position, back in virtual window
   tput rc

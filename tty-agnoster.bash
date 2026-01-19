@@ -15,10 +15,10 @@ __TTY_AG_DEFAULT_USER="${USER}"
 __TTY_AG_EXPERIMENTAL_PROMPTS=false
 
 __TTY_AG_SEGMENT_SEPARATOR_LEFT="█▒░ "
-__TTY_AG_SEGMENT_SEPARATOR_RIGHT=" ░▒█"
+__TTY_AG_SEGMENT_SEPARATOR_RIGHT="█▒░ "
 __TTY_AG_SEGMENT_SEPARATOR_UNDER="█▒░"
-__TTY_AG_SEGMENT_SEPARATOR_BOTTOM="#"
-__TTY_AG_SEGMENT_SEPARATOR_TOP="#"
+__TTY_AG_SEGMENT_SEPARATOR_BOTTOM="█▒░ "
+__TTY_AG_SEGMENT_SEPARATOR_TOP="█▒░  "
 
 __TTY_AG_RIGHT_PROMPT="${__TTY_AG_EXPERIMENTAL_PROMPTS}"
 __TTY_AG_UNDER_PROMPT="${__TTY_AG_EXPERIMENTAL_PROMPTS}"
@@ -156,21 +156,21 @@ __tty_ag_prompt_command() {
   PS1="${__TTY_AG_PS1_LEFT}"
 
   if ${__TTY_AG_UNDER_PROMPT}; then
-    PS1="\[$(__tty_ag_under_prompt "${__TTY_AG_PS1_UNDER}")\]${PS1}"
+    __tty_ag_under_prompt "${__TTY_AG_PS1_UNDER}"
   fi
 
   if ${__TTY_AG_RIGHT_PROMPT}; then
-    PS1="\[$(__tty_ag_right_prompt "${__TTY_AG_PS1_RIGHT}")\]${PS1}"
+    __tty_ag_right_prompt "${__TTY_AG_PS1_RIGHT}"
   elif ${__TTY_AG_RIGHT_WINDOW}; then
-    PS1="\[$(__tty_ag_right_window "${__TTY_AG_PS1_RIGHT}")\]${PS1}"
+    __tty_ag_right_window "${__TTY_AG_PS1_RIGHT}"
   fi
 
   if ${__TTY_AG_BOTTOM_WINDOW}; then
-    PS1="\[$(__tty_ag_bottom_window "${__TTY_AG_PS1_BOTTOM}")\]${PS1}"
+    __tty_ag_bottom_window "${__TTY_AG_PS1_BOTTOM}"
   fi
 
   if ${__TTY_AG_TOP_WINDOW}; then
-    PS1="\[$(__tty_ag_top_window "${__TTY_AG_PS1_TOP}")\]${PS1}"
+    __tty_ag_top_window "${__TTY_AG_PS1_TOP}"
   fi
 
 }

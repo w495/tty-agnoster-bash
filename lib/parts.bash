@@ -63,7 +63,7 @@ __tty_ag_prompt_time() {
 __tty_ag_prompt_date() {
   local _dt
   _dt=$(date '+%Y-%m-%d_%H-%M-%S-%N')
-  __tty_ag_segment "${1}" black darkgray "${_dt}"
+  __tty_ag_segment "${1}" yellow darkgray "${_dt}"
 }
 
 # Dir: current working directory
@@ -73,7 +73,7 @@ __tty_ag_prompt_dir() {
 
 # Dir: current working directory
 __tty_ag_prompt_full_pwd() {
-  __tty_ag_segment "${1}" black darkgray "#|${PWD}|"
+  __tty_ag_segment "${1}" white darkgray "#|${PWD}|"
 }
 
 # Status:
@@ -110,8 +110,8 @@ __tty_ag_build_prompt() {
 
   __tty_ag_prompt_start_all
 
-  __tty_ag_prompt_full_pwd 'RIGHT'
-  __tty_ag_prompt_date 'RIGHT'
+  __tty_ag_prompt_full_pwd 'BOTTOM'
+  __tty_ag_prompt_date 'BOTTOM'
 
   __tty_ag_prompt_line 'LEFT'
   __tty_ag_prompt_history_time 'LEFT'
@@ -121,10 +121,11 @@ __tty_ag_build_prompt() {
   if [[ -z ${AG_NO_CONTEXT+x} ]]; then
     __tty_ag_prompt_context 'LEFT'
   fi
-  __tty_ag_prompt_virtualenv 'RIGHT'
+
+  __tty_ag_prompt_virtualenv 'LEFT'
   __tty_ag_prompt_dir 'LEFT'
-  __tty_ag_prompt_arc 'LEFT'
   __tty_ag_prompt_git 'LEFT'
+  __tty_ag_prompt_arc 'LEFT'
   __tty_ag_prompt_hg 'LEFT'
 
   __tty_ag_prompt_end_all
