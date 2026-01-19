@@ -5,60 +5,60 @@
 #     shfmt -ci -i 2 -sr -s -bn -kp -ln bash -d
 # ---------------------------------------------------------------
 
-__tty_ag_bg_color() {
+__tty_ag_bg_code() {
   # It uses global var to reduce subshells
   case "$1" in
     black)
-      __tty_ag_bg_color=40
+      __tty_ag_bg_code=40
       ;;
     darkred)
-      __tty_ag_bg_color=41
+      __tty_ag_bg_code=41
       ;;
     darkgreen)
-      __tty_ag_bg_color=42
+      __tty_ag_bg_code=42
       ;;
     yellow)
-      __tty_ag_bg_color=43
+      __tty_ag_bg_code=43
       ;;
     darkblue)
-      __tty_ag_bg_color=44
+      __tty_ag_bg_code=44
       ;;
     darkmagenta)
-      __tty_ag_bg_color=45
+      __tty_ag_bg_code=45
       ;;
     darkcyan)
-      __tty_ag_bg_color=46
+      __tty_ag_bg_code=46
       ;;
     white)
-      __tty_ag_bg_color=47
+      __tty_ag_bg_code=47
       ;;
     darkgray)
-      __tty_ag_bg_color=100
+      __tty_ag_bg_code=100
       ;;
     red)
-      __tty_ag_bg_color=101
+      __tty_ag_bg_code=101
       ;;
     green)
-      __tty_ag_bg_color=102
+      __tty_ag_bg_code=102
       ;;
     orange)
-      __tty_ag_bg_color=103
+      __tty_ag_bg_code=103
       ;;
     blue)
-      __tty_ag_bg_color=104
+      __tty_ag_bg_code=104
       ;;
     magenta)
-      __tty_ag_bg_color=105
+      __tty_ag_bg_code=105
       ;;
     cyan)
-      __tty_ag_bg_color=106
+      __tty_ag_bg_code=106
       ;;
     gray)
-      __tty_ag_bg_color=107
+      __tty_ag_bg_code=107
       ;;
     *)
-      __tty_ag_bg_color=''
+      __tty_ag_bg_code=''
       ;;
   esac
-  echo "${__tty_ag_bg_color}"
+  echo "${__tty_ag_bg_code}"
 }

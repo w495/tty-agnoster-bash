@@ -9,8 +9,8 @@ __TTY_AG_DEBUG_MODE=false
 
 source "$(dirname "${BASH_SOURCE[0]}")/utils.bash"
 
-__tty_ag_text_effect reset > /dev/null
-__TTY_AG_TEXT_EFFECT_RESET="${__tty_ag_text_effect}"
+__tty_ag_em_code reset > /dev/null
+__TTY_AG_EM_CODE_RESET="${__tty_ag_em_code}"
 
 __tty_ag_segment_debug() {
   if [[ ${__TTY_AG_DEBUG_MODE} == true ]]; then
@@ -26,20 +26,20 @@ __tty_ag_segment_debug() {
 __tty_ag_prompt_start() {
   local position="${1}"
   local prompt_ref="__TTY_AG_PS1_${position}"
-  local current_bg_name_ref="__TTY_AG_CURRENT_BG_${position}"
-  local segment_separator_ref="__TTY_AG_SEGMENT_SEPARATOR_${position}"
+  local cur_bg_name_ref="__TTY_AG_CURRENT_BG_${position}"
+  local seg_sep_ref="__TTY_AG_SEGMENT_SEPARATOR_${position}"
   local prompt="${!prompt_ref}"
-  local current_bg_name="${!current_bg_name_ref}"
-  local segment_separator="${!segment_separator_ref}"
+  local cur_bg_name="${!cur_bg_name_ref}"
+  local seg_sep="${!seg_sep_ref}"
 
-  local __tty_ag_text_effect
-  __tty_ag_text_effect reset > /dev/null
+  local __tty_ag_em_code
+  __tty_ag_em_code reset > /dev/null
 
   local reset_format
-  reset_format="$(__tty_ag_format_head "${__tty_ag_text_effect}")"
+  reset_format="$(__tty_ag_format_head "${__tty_ag_em_code}")"
 
   eval "${prompt_ref}='${reset_format}'"
-  eval "${current_bg_name_ref}='NONE'"
+  eval "${cur_bg_name_ref}=''"
 }
 
 __tty_ag_prompt_start_all() {
@@ -56,15 +56,15 @@ __tty_ag_prompt_start_all() {
 __tty_ag_segment() {
   local position="${1}"
   local prompt_ref="__TTY_AG_PS1_${position}"
-  local current_bg_name_ref="__TTY_AG_CURRENT_BG_${position}"
-  local segment_separator_ref="__TTY_AG_SEGMENT_SEPARATOR_${position}"
+  local cur_bg_name_ref="__TTY_AG_CURRENT_BG_${position}"
+  local seg_sep_ref="__TTY_AG_SEGMENT_SEPARATOR_${position}"
   local prompt="${!prompt_ref}"
-  local current_bg_name="${!current_bg_name_ref}"
-  local segment_separator="${!segment_separator_ref}"
+  local cur_bg_name="${!cur_bg_name_ref}"
+  local seg_sep="${!seg_sep_ref}"
 
   __tty_ag_segment_debug "&prompt=${prompt_ref}"
-  __tty_ag_segment_debug "&current_bg_name=${current_bg_name_ref}"
-  __tty_ag_segment_debug "&segment_separator=${segment_separator_ref}"
+  __tty_ag_segment_debug "&cur_bg_name=${cur_bg_name_ref}"
+  __tty_ag_segment_debug "&seg_sep=${seg_sep_ref}"
 
   shift
   __tty_ag_segment_debug "1=${1} 2=${2} 3=${3}"
@@ -74,42 +74,40 @@ __tty_ag_segment() {
   local text="${3}"
 
   __tty_ag_segment_debug "Segment:"
-  __tty_ag_segment_debug "current_bg_name=${current_bg_name}"
+  __tty_ag_segment_debug "cur_bg_name=${cur_bg_name}"
   __tty_ag_segment_debug "prompt=${prompt}"
   __tty_ag_segment_debug "bg_name=${bg_name}"
   __tty_ag_segment_debug "fg_name=${fg_name}"
   __tty_ag_segment_debug "text=${text}"
 
   local -a codes
-  local -i __tty_ag_text_effect
-  local -i __tty_ag_fg_color
-  local -i __tty_ag_bg_color
+  local -i __tty_ag_em_code
+  local -i __tty_ag_fg_code
+  local -i __tty_ag_bg_code
 
-  codes=("${__TTY_AG_TEXT_EFFECT_RESET}")
+  codes=("${__TTY_AG_EM_CODE_RESET}")
 
   if [[ -n ${bg_name} ]]; then
-    __tty_ag_bg_color "${bg_name}" > /dev/null
-    codes=("${codes[@]}" "${__tty_ag_bg_color}")
-    __tty_ag_segment_debug "Added ${__tty_ag_bg_color} as bg to codes"
+    __tty_ag_bg_code "${bg_name}" > /dev/null
+    codes=("${codes[@]}" "${__tty_ag_bg_code}")
+    __tty_ag_segment_debug "Added ${__tty_ag_bg_code} as bg to codes"
   fi
   if [[ -n ${fg_name} ]]; then
-    __tty_ag_fg_color "${fg_name}" > /dev/null
-    codes=("${codes[@]}" "${__tty_ag_fg_color}")
-    __tty_ag_segment_debug "Added ${__tty_ag_fg_color} as fg to codes"
+    __tty_ag_fg_code "${fg_name}" > /dev/null
+    codes=("${codes[@]}" "${__tty_ag_fg_code}")
+    __tty_ag_segment_debug "Added ${__tty_ag_fg_code} as fg to codes"
   fi
-  if [[ 
-    ${current_bg_name} != 'NONE' && ${bg_name} != "${current_bg_name}" ]] \
-    ; then
-    __tty_ag_fg_color "${current_bg_name}" > /dev/null
-    __tty_ag_bg_color "${bg_name}" > /dev/null
+  if [[ -n ${cur_bg_name}  && ${bg_name} != "${cur_bg_name}" ]]; then
+    __tty_ag_fg_code "${cur_bg_name}" > /dev/null
+    __tty_ag_bg_code "${bg_name}" > /dev/null
     local -a intermediate=(
-      "${__tty_ag_fg_color}"
-      "${__tty_ag_bg_color}"
+      "${__tty_ag_fg_code}"
+      "${__tty_ag_bg_code}"
     )
     local pre_prompt
     pre_prompt=$(__tty_ag_format_heads "${intermediate[@]}")
     __tty_ag_segment_debug "pre prompt ${pre_prompt}"
-    prompt="${prompt}${pre_prompt}${segment_separator}"
+    prompt="${prompt}${pre_prompt}${seg_sep}"
   else
     __tty_ag_segment_debug "no current BG, codes is ${codes[*]}"
   fi
@@ -121,35 +119,35 @@ __tty_ag_segment() {
     prompt="${prompt}${text}"
   fi
   eval "${prompt_ref}='${prompt}'"
-  eval "${current_bg_name_ref}='${bg_name}'"
+  eval "${cur_bg_name_ref}='${bg_name}'"
 }
 
 # End the prompt, closing any open segments
 __tty_ag_prompt_end() {
   local position="${1}"
   local prompt_ref="__TTY_AG_PS1_${position}"
-  local current_bg_name_ref="__TTY_AG_CURRENT_BG_${position}"
-  local segment_separator_ref="__TTY_AG_SEGMENT_SEPARATOR_${position}"
+  local cur_bg_name_ref="__TTY_AG_CURRENT_BG_${position}"
+  local seg_sep_ref="__TTY_AG_SEGMENT_SEPARATOR_${position}"
   local prompt="${!prompt_ref}"
-  local current_bg_name="${!current_bg_name_ref}"
-  local segment_separator="${!segment_separator_ref}"
+  local cur_bg_name="${!cur_bg_name_ref}"
+  local seg_sep="${!seg_sep_ref}"
 
-  if [[ -n ${current_bg_name} ]]; then
-    local -i __tty_ag_fg_color
-    __tty_ag_fg_color "${current_bg_name}" > /dev/null
+  if [[ -n ${cur_bg_name} ]]; then
+    local -i __tty_ag_fg_code
+    __tty_ag_fg_code "${cur_bg_name}" > /dev/null
     local -a codes=(
-      "${__TTY_AG_TEXT_EFFECT_RESET}"
-      "${__tty_ag_fg_color}"
+      "${__TTY_AG_EM_CODE_RESET}"
+      "${__tty_ag_fg_code}"
     )
     local heads
     heads=$(__tty_ag_format_heads "${codes[@]}")
-    prompt="${prompt}${heads}${segment_separator}"
+    prompt="${prompt}${heads}${seg_sep}"
   fi
   local format_tail
   format_tail="$(__tty_ag_format_tail)"
 
   eval "${prompt_ref}='${prompt}${format_tail}'"
-  eval "${current_bg_name_ref}=''"
+  eval "${cur_bg_name_ref}=''"
 }
 
 __tty_ag_prompt_end_all() {

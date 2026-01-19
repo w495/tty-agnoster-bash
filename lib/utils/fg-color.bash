@@ -5,60 +5,60 @@
 #     shfmt -ci -i 2 -sr -s -bn -kp -ln bash -d
 # ---------------------------------------------------------------
 
-__tty_ag_fg_color() {
+__tty_ag_fg_code() {
   # It uses global var to reduce subshells
   case "$1" in
     black)
-      __tty_ag_fg_color=30
+      __tty_ag_fg_code=30
       ;;
     darkred)
-      __tty_ag_fg_color=31
+      __tty_ag_fg_code=31
       ;;
     darkgreen)
-      __tty_ag_fg_color=32
+      __tty_ag_fg_code=32
       ;;
     yellow)
-      __tty_ag_fg_color=33
+      __tty_ag_fg_code=33
       ;;
     darkblue)
-      __tty_ag_fg_color=34
+      __tty_ag_fg_code=34
       ;;
     darkmagenta)
-      __tty_ag_fg_color=35
+      __tty_ag_fg_code=35
       ;;
     darkcyan)
-      __tty_ag_fg_color=36
+      __tty_ag_fg_code=36
       ;;
     white)
-      __tty_ag_fg_color=37
+      __tty_ag_fg_code=37
       ;;
     darkgray)
-      __tty_ag_fg_color=90
+      __tty_ag_fg_code=90
       ;;
     red)
-      __tty_ag_fg_color=91
+      __tty_ag_fg_code=91
       ;;
     green)
-      __tty_ag_fg_color=92
+      __tty_ag_fg_code=92
       ;;
     orange)
-      __tty_ag_fg_color=93
+      __tty_ag_fg_code=93
       ;;
     blue)
-      __tty_ag_fg_color=94
+      __tty_ag_fg_code=94
       ;;
     magenta)
-      __tty_ag_fg_color=95
+      __tty_ag_fg_code=95
       ;;
     cyan)
-      __tty_ag_fg_color=96
+      __tty_ag_fg_code=96
       ;;
     gray)
-      __tty_ag_fg_color=96
+      __tty_ag_fg_code=96
       ;;
     *)
-      __tty_ag_fg_color=''
+      __tty_ag_fg_code=''
       ;;
   esac
-  echo "${__tty_ag_fg_color}"
+  echo "${__tty_ag_fg_code}"
 }

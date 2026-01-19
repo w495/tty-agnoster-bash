@@ -83,9 +83,9 @@ __tty_ag_prompt_full_pwd() {
 __tty_ag_prompt_status() {
   local symbols
   local red yellow cyan
-  red=$(__tty_ag_fg_color red)
-  yellow=$(__tty_ag_fg_color yellow)
-  cyan=$(__tty_ag_fg_color cyan)
+  red=$(__tty_ag_fg_code red)
+  yellow=$(__tty_ag_fg_code yellow)
+  cyan=$(__tty_ag_fg_code cyan)
 
   symbols=()
   if [[ ${__TTY_AG_RETVAL} -ne 0 ]]; then

@@ -133,7 +133,7 @@ __tty_ag_prompt_command() {
   local __TTY_AG_RETVAL=$?
 
   local reset_te reset_format
-  reset_te="$(__tty_ag_text_effect reset)"
+  reset_te="$(__tty_ag_em_code reset)"
   reset_format="$(__tty_ag_format_head "${reset_te}")"
 
   local __TTY_AG_PS1_LEFT="${reset_format}"   # left
