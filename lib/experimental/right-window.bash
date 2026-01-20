@@ -24,10 +24,10 @@ __tty_ag_right_window() {
   row="${__tty_ag_cursor_row}"
 
   # Create a virtual window that is two lines smaller at the bottom.
-  tput csr "${line_len}" $((row - 1))
+  tput csr "${line_len}" $((row))
   # Move cursor to last line in your screen
-  tput cup $((row - 1)) $((line_len))
-  printf '%b' "${prompt}"
+  tput cup $((row)) $((line_len))
+  printf '%b' "${row}| ${prompt}"
   # Move cursor to home position, back in virtual window
   tput rc
 }

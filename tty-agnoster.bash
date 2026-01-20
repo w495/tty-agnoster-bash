@@ -131,11 +131,21 @@ __tty_ag_main() {
     printf "%b" "\0033[41m# options = ${opts}|\0033[0m\n"
   fi
 
-  PROMPT_COMMAND=__tty_ag_prompt_command
+  local __TTY_AG_PS1_LEFT
+  __tty_ag_build_prompt_sync
+  if ${__TTY_AG_LEFT_PROMPT}; then
+    PS1="${__TTY_AG_PS1_LEFT}"
+  fi
 
+  PROMPT_COMMAND=__tty_ag_prompt_command
 }
 
 __tty_ag_prompt_command() {
+
+  (__tty_ag_prompt_command_async &)
+}
+
+__tty_ag_prompt_command_async() {
   local __TTY_AG_RETVAL=$?
 
   local __TTY_AG_PS1_LEFT
@@ -149,33 +159,27 @@ __tty_ag_prompt_command() {
     printf '%b' "\0033]0;${PWD}\a" &
   )
 
-  __tty_ag_build_prompt
+  __tty_ag_build_prompt_async
 
-  if ${__TTY_AG_LEFT_PROMPT}; then
-    PS1="${__TTY_AG_PS1_LEFT}"
+  if ${__TTY_AG_TOP_WINDOW}; then
+    __tty_ag_top_window "${__TTY_AG_PS1_TOP}"
   fi
-  (
-    (
-      if ${__TTY_AG_TOP_WINDOW}; then
-          __tty_ag_top_window "${__TTY_AG_PS1_TOP}" &
-      fi
-      if ${__TTY_AG_UNDER_PROMPT}; then
-        # Do not try put it into PS1.
-        __tty_ag_under_prompt "${__TTY_AG_PS1_UNDER}" &
-      fi
-      if ${__TTY_AG_RIGHT_PROMPT}; then
-          # Do not try put it into PS1.
-          __tty_ag_right_prompt "${__TTY_AG_PS1_RIGHT}" &
-      elif ${__TTY_AG_RIGHT_WINDOW}; then
-          # Do not try put it into PS1.
-          __tty_ag_right_window "${__TTY_AG_PS1_RIGHT}" &
-      fi
-      if ${__TTY_AG_BOTTOM_WINDOW}; then
-          # Do not try put it into PS1.
-          __tty_ag_bottom_window "${__TTY_AG_PS1_BOTTOM}" &
-      fi
-    ) &
-  )
+  if ${__TTY_AG_UNDER_PROMPT}; then
+    # Do not try put it into PS1.
+    __tty_ag_under_prompt "${__TTY_AG_PS1_UNDER}"
+  fi
+  if ${__TTY_AG_RIGHT_PROMPT}; then
+      # Do not try put it into PS1.
+      __tty_ag_right_prompt "${__TTY_AG_PS1_RIGHT}"
+  elif ${__TTY_AG_RIGHT_WINDOW}; then
+      # Do not try put it into PS1.
+      __tty_ag_right_window "${__TTY_AG_PS1_RIGHT}"
+  fi
+  if ${__TTY_AG_BOTTOM_WINDOW}; then
+    # Do not try put it into PS1.
+      __tty_ag_bottom_window "${__TTY_AG_PS1_BOTTOM}"
+  fi
+
 
 
 }

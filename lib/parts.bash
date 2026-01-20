@@ -22,7 +22,7 @@ __tty_ag_prompt_context() {
   local user
   user="$(whoami)"
   if [[ ${user} != "${__TTY_AG_DEFAULT_USER}" || -n ${SSH_CLIENT} ]]; then
-    __tty_ag_segment "${1}" '-black' 'default' "${user}@\h"
+    __tty_ag_segment "${1}" "${2}" "${3}"  "${user}@\h"
   fi
 }
 
@@ -91,7 +91,7 @@ __tty_ag_prompt_time() {
 __tty_ag_prompt_dt() {
   local _dt
   _dt=$(date '+%Y-%m-%d_%H-%M-%S-%N')
-  __tty_ag_segment "${1}" '+green' '-black' "${_dt}"
+  __tty_ag_segment "${1}" "${2}" "${3}" "${_dt}"
 }
 
 __tty_ag_prompt_device() {
@@ -119,24 +119,23 @@ __tty_ag_prompt_full_pwd() {
 __tty_ag_prompt_status() {
   local symbols
   local __tty_ag_fg_code
-  symbols=()
   if [[ ${__TTY_AG_RETVAL} -ne 0 ]]; then
     __tty_ag_fg_code -red > /dev/null
     local red="${__tty_ag_fg_code}"
-    symbols+=(" $(__tty_ag_format_head "${red}")[x]")
+    symbols="${symbols}$(__tty_ag_format_head "${red}")[x]"
   fi
   if [[ ${UID} -eq 0 ]]; then
     __tty_ag_fg_code -yellow > /dev/null
     local yellow="${__tty_ag_fg_code}"
-    symbols+=(" $(__tty_ag_format_head "${yellow}") [z]")
+    symbols="${symbols}$(__tty_ag_format_head "${yellow}")[z]"
   fi
   if [[ $(jobs -l | wc -l || true) -gt 0 ]]; then
     __tty_ag_fg_code -cyan > /dev/null
     local cyan="${__tty_ag_fg_code}"
-    symbols+=(" $(__tty_ag_format_head "${cyan}") [\j]")
+    symbols="${symbols}$(__tty_ag_format_head "${cyan}")[\j]"
   fi
-  if [[ -n ${symbols[*]} ]]; then
-    __tty_ag_segment "${1}" '-black' 'default' "${symbols}"
+  if [[ -n ${symbols} ]]; then
+    __tty_ag_segment "${1}" "${2}" "${3}" "${symbols}"
   fi
   true
 }
@@ -144,7 +143,8 @@ __tty_ag_prompt_status() {
 ######################################################################
 ## Main prompt
 
-__tty_ag_build_prompt() {
+
+__tty_ag_build_prompt_sync() {
 
   history -a
   history -c
@@ -152,23 +152,34 @@ __tty_ag_build_prompt() {
 
   __tty_ag_prompt_start_all
 
-  __tty_ag_segment    'LEFT'    'no'   'default'   ''
-  __tty_ag_lineno     'LEFT'    'no'   'default'  "║ \# ║"
+  __tty_ag_seg -p LEFT -b no    -f +red      --text  ''
+  __tty_ag_seg -p LEFT -b no    -f +yellow   --text  '║\!║'
+  __tty_ag_seg -p LEFT -b no    -f +magenta  --text  ' \t '
+  __tty_ag_seg -p LEFT -b -blue -f -black    --text  '\w '
 
-#  __tty_ag_segment 'LEFT'    'no'   '+green'   "║$(printf '%3s' "${LINENO}")║"
-#
-  __tty_ag_segment 'LEFT'    'no'   '+white'   '[\!]'
-  __tty_ag_segment 'LEFT'    'no'   '+yellow'  '/\t/'
+  __tty_ag_prompt_end_all
+}
 
-  __tty_ag_prompt_context     'LEFT'
-  __tty_ag_prompt_status      'LEFT'
+
+__tty_ag_build_prompt_async() {
+
+  history -a
+  history -c
+  history -r
+
+  __tty_ag_prompt_start_all
+
+  __tty_ag_segment            'LEFT'    'no'   'default'   ''
+  __tty_ag_segment            'LEFT'    'no'   '+white'   '\!'
+  __tty_ag_segment            'LEFT'    'no'   '+yellow'  '/\t/'
+  __tty_ag_prompt_status      'LEFT'    'no'   '-black'
   __tty_ag_prompt_virtualenv  'LEFT'
 
   __tty_ag_segment 'LEFT'    '-blue'   '-black'    '\w '
 
-  __tty_ag_prompt_git         'LEFT'
-  __tty_ag_prompt_arc         'LEFT'
-  __tty_ag_prompt_hg          'LEFT'
+  __tty_ag_prompt_git         'RIGHT'
+  __tty_ag_prompt_arc         'RIGHT'
+  __tty_ag_prompt_hg          'RIGHT'
 
   __tty_ag_prompt_full_pwd    'BOTTOM'
   __tty_ag_prompt_dt          'BOTTOM'
@@ -178,3 +189,7 @@ __tty_ag_build_prompt() {
 
   __tty_ag_prompt_end_all
 }
+
+#
+#  __tty_ag_lineno     'LEFT'    'no'   'default'  "║ \# ║"
+#  __tty_ag_segment 'LEFT'    'no'   '+green'   "║$(printf '%3s' "${LINENO}")║"

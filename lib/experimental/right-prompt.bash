@@ -15,6 +15,6 @@ __tty_ag_right_prompt() {
     printf '%b' "${prompt}" | ansi2txt | sed -re 's/\o001|\o002//g'
   )
   local -i line_len=$((COLUMNS + ${#prompt} - ${#prompt_flat}))
-  printf "%*s" "${line_len}" "${prompt}"
+  printf "\n%*s" "${line_len}" "${prompt}"
   tput rc
 }
