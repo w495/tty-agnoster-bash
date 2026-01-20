@@ -20,9 +20,9 @@ __tty_ag_prompt_arc() {
     dirty=$(arc status --json | jq '.status | length')
 
     if [[ ${dirty} == 0 ]]; then
-      __tty_ag_segment "${pos}" green black "${branch} (o_O)"
+      __tty_ag_segment "${pos}"  '-green' '-black' "${branch} (^_^)"
     else
-      __tty_ag_segment "${pos}" yellow black "${branch} (^_^)"
+      __tty_ag_segment "${pos}" '-yellow' '-black' "${branch} (o_0)"
     fi
   fi
 }

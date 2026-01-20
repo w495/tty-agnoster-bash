@@ -7,7 +7,6 @@
 
 __tty_ag_under_prompt() {
   tput sc
-  local prompt="${1}"
-  printf "\r\n%s\r\b" "${prompt}"
+  printf "\n%s" "${1}"
   tput rc
 }

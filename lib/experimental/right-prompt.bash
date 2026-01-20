@@ -11,9 +11,10 @@ __tty_ag_right_prompt() {
   tput sc
   local prompt="${1}"
   # shellcheck disable=SC2312
-  prompt_flat=$(echo -en "${prompt}" | ansi2txt | sed 's/\\\[\\\]//gi')
-
-  local -i line_len=$((COLUMNS + ${#prompt_flat}))
-  printf "%*s\r\n" "${line_len}" "${prompt}"
+  prompt_flat=$(
+    printf '%b' "${prompt}" | ansi2txt | sed -re 's/\o001|\o002//g'
+  )
+  local -i line_len=$((COLUMNS + ${#prompt} - ${#prompt_flat}))
+  printf "%*s" "${line_len}" "${prompt}"
   tput rc
 }

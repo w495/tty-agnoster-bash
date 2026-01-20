@@ -8,53 +8,53 @@
 __tty_ag_fg_code() {
   # It uses global var to reduce subshells
   case "$1" in
-    black)
+    -black)
       __tty_ag_fg_code=30
       ;;
-    darkred)
+    -red)
       __tty_ag_fg_code=31
       ;;
-    darkgreen)
+    -green)
       __tty_ag_fg_code=32
       ;;
-    yellow)
+    -yellow)
       __tty_ag_fg_code=33
       ;;
-    darkblue)
+    -blue)
       __tty_ag_fg_code=34
       ;;
-    darkmagenta)
+    -magenta)
       __tty_ag_fg_code=35
       ;;
-    darkcyan)
+    -cyan)
       __tty_ag_fg_code=36
       ;;
-    white)
+    -white)
       __tty_ag_fg_code=37
       ;;
-    darkgray)
+    +black)
       __tty_ag_fg_code=90
       ;;
-    red)
+    +red)
       __tty_ag_fg_code=91
       ;;
-    green)
+    +green)
       __tty_ag_fg_code=92
       ;;
-    orange)
+    +yellow)
       __tty_ag_fg_code=93
       ;;
-    blue)
+    +blue)
       __tty_ag_fg_code=94
       ;;
-    magenta)
+    +magenta)
       __tty_ag_fg_code=95
       ;;
-    cyan)
+    +cyan)
       __tty_ag_fg_code=96
       ;;
-    gray)
-      __tty_ag_fg_code=96
+    +white)
+      __tty_ag_fg_code=97
       ;;
     *)
       __tty_ag_fg_code=''

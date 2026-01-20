@@ -8,57 +8,57 @@
 __tty_ag_bg_code() {
   # It uses global var to reduce subshells
   case "$1" in
-    black)
+    -black)
       __tty_ag_bg_code=40
       ;;
-    darkred)
+    -red)
       __tty_ag_bg_code=41
       ;;
-    darkgreen)
+    -green)
       __tty_ag_bg_code=42
       ;;
-    yellow)
+    -yellow)
       __tty_ag_bg_code=43
       ;;
-    darkblue)
+    -blue)
       __tty_ag_bg_code=44
       ;;
-    darkmagenta)
+    -magenta)
       __tty_ag_bg_code=45
       ;;
-    darkcyan)
+    -cyan)
       __tty_ag_bg_code=46
       ;;
-    white)
+    -white)
       __tty_ag_bg_code=47
       ;;
-    darkgray)
+    +black)
       __tty_ag_bg_code=100
       ;;
-    red)
+    +red)
       __tty_ag_bg_code=101
       ;;
-    green)
+    +green)
       __tty_ag_bg_code=102
       ;;
-    orange)
+    +yellow)
       __tty_ag_bg_code=103
       ;;
-    blue)
+    +blue)
       __tty_ag_bg_code=104
       ;;
-    magenta)
+    +magenta)
       __tty_ag_bg_code=105
       ;;
-    cyan)
+    +cyan)
       __tty_ag_bg_code=106
       ;;
-    gray)
+    +white)
       __tty_ag_bg_code=107
       ;;
     *)
-      __tty_ag_bg_code=''
+      __tty_ag_bg_code=0
       ;;
   esac
-  echo "${__tty_ag_bg_code}"
+  printf '%d' "${__tty_ag_bg_code}"
 }
