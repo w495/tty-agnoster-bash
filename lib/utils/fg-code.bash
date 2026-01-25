@@ -7,7 +7,7 @@
 
 __tty_ag_fg_code() {
   # It uses global var to reduce subshells
-  case "$1" in
+  case "${1}" in
     -black)
       __tty_ag_fg_code=30
       ;;
@@ -57,8 +57,7 @@ __tty_ag_fg_code() {
       __tty_ag_fg_code=97
       ;;
     *)
-      __tty_ag_fg_code=''
+      __tty_ag_fg_code=0
       ;;
   esac
-  echo "${__tty_ag_fg_code}"
 }

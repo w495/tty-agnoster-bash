@@ -5,6 +5,9 @@
 #     shfmt -ci -i 2 -sr -s -bn -kp -ln bash -d
 # ---------------------------------------------------------------
 
+source "$(dirname "${BASH_SOURCE[0]}")/fg-code.bash"
+source "$(dirname "${BASH_SOURCE[0]}")/bg-code.bash"
+
 __TTY_AG_DEBUG_MODE=false
 
 __tty_ag_format_debug() {
@@ -17,30 +20,42 @@ __tty_ag_format_debug() {
   fi
 }
 
-__tty_ag_format_heads() {
-  local -a codes=("${@}")
-  __tty_ag_format_debug "format: ${codes[*]}"
-  local seq=''
-  for ((i = 0; i < ${#codes[@]}; i++)); do
-    if [[ -n ${seq} ]]; then
-      seq="${seq};"
-    fi
-    seq="${seq}${codes[${i}]}"
-  done
-  __tty_ag_format_debug "\\e['${seq}'m"
-  printf "%b" "\0001\0033[${seq}m\0002"
+__tty_ag_format_fg() {
+  local __tty_ag_fg_code
+  local __tty_ag_format
+  __tty_ag_fg_code "${1}"
+  __tty_ag_format_head "${__tty_ag_fg_code}"
+  __tty_ag_format_fg="${__tty_ag_format_head}"
+}
+
+__tty_ag_format_bg() {
+  local __tty_ag_bg_code
+  local __tty_ag_format
+  __tty_ag_bg_code "${1}"
+  __tty_ag_format_head "${__tty_ag_bg_code}"
+  __tty_ag_format_bg="${__tty_ag_format_head}"
 }
 
 __tty_ag_format_head() {
-  printf "%b" "\0001\0033[${1}m\0002"
+  local code_seq="${*}"
+  __tty_ag_format_debug "code_seq: ${code_seq}"
+  local seq=''
+  for code in ${code_seq}; do
+    if [[ -n ${seq} ]]; then
+      seq="${seq};"
+    fi
+    seq="${seq}${code}"
+  done
+  __tty_ag_format_debug "\\e['${seq}'m"
+  printf -v __tty_ag_format_head "%b" "\0001\0033[${seq}m\0002"
 }
 
 __tty_ag_format_reset() {
-  printf "%b" "\0001\0033[0m\0002"
+  printf -v __tty_ag_format_reset "%b" "\0001\0033[0m\0002"
 }
 
 __tty_ag_format_tail() {
-  printf "%b" "\0001\0033[0m\0002"
+  printf -v __tty_ag_format_tail "%b" "\0001\0033[0m\0002"
 }
 
 ___tty_ag_format_plain() {
@@ -63,7 +78,7 @@ ___tty_ag_format_chars_number() {
 
 __tty_ag_format_chars_number() {
   if [[ -n "${1}" ]]; then
-    printf '%s' "${1}" | ___tty_ag_format_chars_number
+    printf '%b' "${1}" | ___tty_ag_format_chars_number
   else
     ___tty_ag_format_chars_number
   fi
@@ -75,7 +90,7 @@ ___tty_ag_format_bytes_number() {
 
 __tty_ag_format_bytes_number() {
   if [[ -n "${1}" ]]; then
-    printf '%s' "${1}" | ___tty_ag_format_bytes_number
+    printf '%b' "${1}" | ___tty_ag_format_bytes_number
   else
     ___tty_ag_format_bytes_number
   fi

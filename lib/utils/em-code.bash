@@ -33,5 +33,4 @@ __tty_ag_em_code() {
       __tty_ag_em_code=''
       ;;
   esac
-  echo "${__tty_ag_em_code}"
 }

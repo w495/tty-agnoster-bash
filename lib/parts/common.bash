@@ -108,25 +108,15 @@ __tty_ag_prompt_full_pwd() {
 # - am I root
 # - are there background jobs?
 __tty_ag_prompt_status() {
-  local symbols
-  local __tty_ag_fg_code
+  local __tty_ag_format_fg
   if [[ ${__TTY_AG_RETVAL} -ne 0 ]]; then
-    __tty_ag_fg_code -red > /dev/null
-    local red="${__tty_ag_fg_code}"
-    symbols="${symbols}$(__tty_ag_format_head "${red}")[x]"
+    __tty_ag_segment "${1}" "${2}" '-red' "[x]"
   fi
   if [[ ${UID} -eq 0 ]]; then
-    __tty_ag_fg_code -yellow > /dev/null
-    local yellow="${__tty_ag_fg_code}"
-    symbols="${symbols}$(__tty_ag_format_head "${yellow}")[z]"
+    __tty_ag_segment "${1}" "${2}" '-yellow' "[!]"
   fi
-  if [[ $(jobs -l | wc -l || true) -gt 0 ]]; then
-    __tty_ag_fg_code -cyan > /dev/null
-    local cyan="${__tty_ag_fg_code}"
-    symbols="${symbols}$(__tty_ag_format_head "${cyan}")[\j]"
-  fi
-  if [[ -n ${symbols} ]]; then
-    __tty_ag_segment "${1}" "${2}" "${3}" "${symbols}"
+  if [[ $(jobs -rs | wc -l || true) -gt 0 ]]; then
+    __tty_ag_segment "${1}" "${2}" '-cyan' "[\j]"
   fi
   true
 }

@@ -6,8 +6,9 @@
 # ---------------------------------------------------------------
 
 source "$(dirname "${BASH_SOURCE[0]}")/experimental/right-prompt.bash"
-source "$(dirname "${BASH_SOURCE[0]}")/experimental/right-tray.bash"
+
 source "$(dirname "${BASH_SOURCE[0]}")/experimental/under-prompt.bash"
 
-source "$(dirname "${BASH_SOURCE[0]}")/experimental/top-tray.bash"
-source "$(dirname "${BASH_SOURCE[0]}")/experimental/bottom-tray.bash"
+source "$(dirname "${BASH_SOURCE[0]}")/experimental/tray-at-top.bash"
+source "$(dirname "${BASH_SOURCE[0]}")/experimental/tray-at-bottom.bash"
+source "$(dirname "${BASH_SOURCE[0]}")/experimental/tray-at-right.bash"

@@ -7,7 +7,7 @@
 
 __tty_ag_bg_code() {
   # It uses global var to reduce subshells
-  case "$1" in
+  case "${1}" in
     -black)
       __tty_ag_bg_code=40
       ;;
@@ -58,7 +58,18 @@ __tty_ag_bg_code() {
       ;;
     *)
       __tty_ag_bg_code=0
+      return 1
       ;;
   esac
-  printf '%d' "${__tty_ag_bg_code}"
 }
+
+#
+#__tty_ag_bg_exists() {
+#  local -l name="${1}"
+#  [[ -z "${1}" ]] && return 1
+#  [[ '_' == "${1}" ]] && return 1
+#  [[ 'null' == "${1}" ]] && return 1
+#  [[ 'none' == "${1}" ]] && return 1
+#
+#  return 0
+#}

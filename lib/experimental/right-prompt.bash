@@ -9,7 +9,7 @@
 
 source "$(dirname "${BASH_SOURCE[0]}")/../utils/format.bash"
 
-__tty_ag_right_prompt() {
+__tty_ag_show_right_prompt() {
 
   local prompt="${1}"
   local __tty_ag_format_delta

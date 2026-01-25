@@ -10,15 +10,38 @@
 # and hide itself if no information needs to be shown
 source "$(dirname "${BASH_SOURCE[0]}")/lib/parts.bash"
 source "$(dirname "${BASH_SOURCE[0]}")/lib/experimental.bash"
+source "$(dirname "${BASH_SOURCE[0]}")/configure.bash"
 
 __TTY_AG_DEFAULT_USER="${USER}"
 __TTY_AG_EXPERIMENTAL_PROMPTS=false
 
-__TTY_AG_SEGMENT_SEPARATOR_LEFT="▒░ "
-__TTY_AG_SEGMENT_SEPARATOR_RIGHT="▒░"
-__TTY_AG_SEGMENT_SEPARATOR_UNDER="▒░"
-__TTY_AG_SEGMENT_SEPARATOR_BOTTOM="▒░"
-__TTY_AG_SEGMENT_SEPARATOR_TOP=" "
+
+# Code page ~737
+__TTY_AG_SEGMENT_SEPARATOR_FORWARD_LEFT='▒░' # █▒░
+__TTY_AG_SEGMENT_SEPARATOR_REVERSE_LEFT=$(
+  printf '%s' "${__TTY_AG_SEGMENT_SEPARATOR_FORWARD_LEFT}" | rev
+)
+
+__TTY_AG_SEGMENT_SEPARATOR_FORWARD_RIGHT='▒░'
+__TTY_AG_SEGMENT_SEPARATOR_REVERSE_RIGHT=$(
+  printf '%s' "${__TTY_AG_SEGMENT_SEPARATOR_FORWARD_RIGHT}" | rev
+)
+
+__TTY_AG_SEGMENT_SEPARATOR_FORWARD_UNDER='▒░'
+__TTY_AG_SEGMENT_SEPARATOR_REVERSE_UNDER=$(
+  printf '%s' "${__TTY_AG_SEGMENT_SEPARATOR_FORWARD_UNDER}" | rev
+)
+
+__TTY_AG_SEGMENT_SEPARATOR_FORWARD_BOTTOM='▒░'
+__TTY_AG_SEGMENT_SEPARATOR_REVERSE_BOTTOM=$(
+  printf '%s' "${__TTY_AG_SEGMENT_SEPARATOR_REVERSE_BOTTOM}" | rev
+)
+
+__TTY_AG_SEGMENT_SEPARATOR_FORWARD_TOP=' '
+__TTY_AG_SEGMENT_SEPARATOR_REVERSE_TOP=$(
+  printf '%s' "${__TTY_AG_SEGMENT_SEPARATOR_FORWARD_TOP}" | rev
+)
+
 
 __TTY_AG_LEFT_PROMPT=false
 __TTY_AG_LEFT_PROMPT_COMPUTABLE=false
@@ -36,8 +59,23 @@ __tty_ag_opts() {
     debug,verbose,
     user:,separator:,
     cs:,separator:,common-separator:,
+    cfs:,forward-separator:,common-forward-separator:,
+    crs:,reverse-separator:,common-reverse-separator:,
     ls:,left-separator:,
+    lfs:,left-forward-separator:,
+    lrs:,left-reverse-separator:,
     rs:,right-separator:,
+    rfs:,right-forward-separator:,
+    rrs:,right-reverse-separator:,
+    us:,under-separator:,
+    ufs:,under-forward-separator:,
+    urs:,under-reverse-separator:,
+    bs:,bottom-separator:,
+    bfs:,bottom-forward-separator:,
+    brs:,bottom-reverse-separator:,
+    ts:,top-separator:,
+    tfs:,top-forward-separator:,
+    trs:,top-reverse-separator:,
     lp,left-prompt,
     cp,computable-left-prompt,
     rp,right-prompt,
@@ -65,31 +103,113 @@ __tty_ag_opts() {
         shift 1
         ;;
       -s | --cs | --separator | --common-separator)
-        __TTY_AG_SEGMENT_SEPARATOR_LEFT="${2}"
-        __TTY_AG_SEGMENT_SEPARATOR_RIGHT="${2}"
-        __TTY_AG_SEGMENT_SEPARATOR_BOTTOM="${2}"
-        __TTY_AG_SEGMENT_SEPARATOR_TOP="${2}"
-        __TTY_AG_SEGMENT_SEPARATOR_UNDER="${2}"
+        local forward="${2}"
+        local reverse
+        reverse=$(printf '%s' "${forward}" | rev)
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_LEFT="${forward}"
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_LEFT="${reverse}"
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_RIGHT="${forward}"
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_RIGHT="${reverse}"
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_BOTTOM="${forward}"
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_BOTTOM="${reverse}"
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_TOP="${forward}"
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_TOP="${reverse}"
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_UNDER="${forward}"
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_UNDER="${reverse}"
+        shift 2
+        ;;
+      -f | --cfs | --forward-separator | --common-forward-separator)
+        local forward="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_LEFT="${forward}"
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_RIGHT="${forward}"
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_BOTTOM="${forward}"
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_TOP="${forward}"
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_UNDER="${forward}"
+        shift 2
+        ;;
+      -S | --crs | --reverse-separator | --common-reverse-separator)
+        local reverse
+        reverse=$(printf '%s' "${2}" | rev)
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_LEFT="${reverse}"
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_RIGHT="${reverse}"
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_BOTTOM="${reverse}"
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_TOP="${reverse}"
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_UNDER="${reverse}"
         shift 2
         ;;
       --ls | --left-separator)
-        __TTY_AG_SEGMENT_SEPARATOR_LEFT="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_LEFT="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_LEFT=$(
+          printf '%s' "${2}" | rev
+        )
         shift 2
         ;;
       --rs | --right-separator)
-        __TTY_AG_SEGMENT_SEPARATOR_RIGHT="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_RIGHT="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_RIGHT=$(
+          printf '%s' "${2}" | rev
+        )
         shift 2
         ;;
       --bs | --bottom-separator)
-        __TTY_AG_SEGMENT_SEPARATOR_BOTTOM="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_BOTTOM="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_BOTTOM=$(
+          printf '%s' "${2}" | rev
+        )
         shift 2
         ;;
       --ts | --top-separator)
-        __TTY_AG_SEGMENT_SEPARATOR_TOP="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_TOP="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_TOP=$(
+          printf '%s' "${2}" | rev
+        )
         shift 2
         ;;
       --us | --under-separator)
-        __TTY_AG_SEGMENT_SEPARATOR_UNDER="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_UNDER="${2}"
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_UNDER=$(
+          printf '%s' "${2}" | rev
+        )
+        shift 2
+        ;;
+      --lfs | --left-forward-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_LEFT="${2}"
+        shift 2
+        ;;
+      --rfs | --right-forward-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_RIGHT="${2}"
+        shift 2
+        ;;
+      --bfs | --bottom-forward-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_BOTTOM="${2}"
+        shift 2
+        ;;
+      --tfs | --top-forward-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_TOP="${2}"
+        shift 2
+        ;;
+      --ufs | --under-forward-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_FORWARD_UNDER="${2}"
+        shift 2
+        ;;
+      --lrs | --left-reverse-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_LEFT="${2}"
+        shift 2
+        ;;
+      --rrs | --right-reverse-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_RIGHT="${2}"
+        shift 2
+        ;;
+      --brs | --bottom-reverse-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_BOTTOM="${2}"
+        shift 2
+        ;;
+      --trs | --top-reverse-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_TOP="${2}"
+        shift 2
+        ;;
+      --urs | --under-reverse-separator)
+        __TTY_AG_SEGMENT_SEPARATOR_REVERSE_UNDER="${2}"
         shift 2
         ;;
       -l | --lp | --left-prompt)
@@ -137,59 +257,55 @@ __tty_ag_opts() {
 }
 
 
+__tty_ag_prompt_command_top() {
+  local __TTY_AG_PS1_TOP
+  __tty_ag_configure_tray_at_top
+  # Do not try put it into PS1.
+  __tty_ag_show_tray_at_top "${__TTY_AG_PS1_TOP}"
+}
 
+__tty_ag_prompt_command_left() {
+  local __TTY_AG_PS1_LEFT
+  __tty_ag_configure_left_prompt
+  PS1="${__TTY_AG_PS1_LEFT}"
+}
 
 __tty_ag_prompt_command_under() {
   local __TTY_AG_PS1_UNDER
-  __tty_ag_configure_prompt_under
-  # Do not try put it into PS1.
-  __tty_ag_show_prompt_under "${__TTY_AG_PS1_UNDER}"
+  __tty_ag_configure_under_prompt
+  __tty_ag_show_under_prompt "${__TTY_AG_PS1_UNDER}"
 }
-
 
 __tty_ag_prompt_command_right_prompt() {
   local __TTY_AG_PS1_RIGHT
-  __tty_ag_configure_prompt_right
-  # Do not try put it into PS1.
-  __tty_ag_right_prompt "${__TTY_AG_PS1_RIGHT}"
+  __tty_ag_configure_right_prompt
+  __tty_ag_show_right_prompt "${__TTY_AG_PS1_RIGHT}"
 }
-
 
 __tty_ag_prompt_command_right_tray() {
   local __TTY_AG_PS1_RIGHT
-  __tty_ag_configure_prompt_right
+  __tty_ag_configure_right_prompt
   # Do not try put it into PS1.
-  __tty_ag_right_tray "${__TTY_AG_PS1_RIGHT}"
+  __tty_ag_show_tray_at_right "${__TTY_AG_PS1_RIGHT}"
 }
 
-
-__tty_ag_prompt_command_if_right() {
-  if ${__TTY_AG_RIGHT_PROMPT}; then
-    __tty_ag_prompt_command_right_prompt
-  elif ${__TTY_AG_RIGHT_TRAY}; then
-    __tty_ag_prompt_command_right_tray
-  fi
-}
-
-
-__tty_ag_prompt_command_top() {
-  local __TTY_AG_PS1_TOP
-  __tty_ag_configure_tray_top
-  # Do not try put it into PS1.
-  __tty_ag_tray_at_top "${__TTY_AG_PS1_TOP}"
-}
 
 __tty_ag_prompt_command_bottom() {
   local __TTY_AG_PS1_BOTTOM
-  __tty_ag_configure_tray_bottom
+  __tty_ag_configure_tray_at_bottom
   # Do not try put it into PS1.
-  __tty_ag_tray_bottom "${__TTY_AG_PS1_BOTTOM}"
+  __tty_ag_show_tray_at_bottom "${__TTY_AG_PS1_BOTTOM}"
 }
-
 
 __tty_ag_prompt_command_if_top() {
   if ${__TTY_AG_TOP_TRAY}; then
     __tty_ag_prompt_command_top
+  fi
+}
+
+__tty_ag_prompt_command_if_left() {
+  if ${__TTY_AG_LEFT_PROMPT_COMPUTABLE}; then
+    __tty_ag_prompt_command_left
   fi
 }
 
@@ -199,19 +315,33 @@ __tty_ag_prompt_command_if_under() {
   fi
 }
 
+__tty_ag_prompt_command_if_right() {
+   __tty_ag_prompt_command_right_tray
+
+#  if ${__TTY_AG_RIGHT_PROMPT}; then
+#    __tty_ag_prompt_command_right_prompt
+#  elif ${__TTY_AG_RIGHT_TRAY}; then
+#    __tty_ag_prompt_command_right_tray
+#  fi
+}
+
 __tty_ag_prompt_command_if_bottom() {
   if ${__TTY_AG_BOTTOM_TRAY}; then
     __tty_ag_prompt_command_bottom
   fi
 }
 
-__tty_ag_prompt_command_sync() {
-  __tty_ag_prompt_command_if_under
+__tty_ag_prompt_command_prompts() {
+  __tty_ag_prompt_command_if_left
+#  __tty_ag_prompt_command_if_under
   __tty_ag_prompt_command_if_right
 }
 
-__tty_ag_prompt_command_async() {
-  printf '%b' "\0033]0;${PWD}\a"
+__tty_ag_prompt_command_title() {
+  printf '%b' "\0033]0;XX${PWD}\a"
+}
+
+__tty_ag_prompt_command_trays() {
   __tty_ag_prompt_command_if_top
   __tty_ag_prompt_command_if_bottom
 }
@@ -220,8 +350,9 @@ __tty_ag_prompt_command() {
   local __TTY_AG_RETVAL=$?
 
   tput civis
-  __tty_ag_prompt_command_async
-  __tty_ag_prompt_command_sync
+  __tty_ag_prompt_command_title
+  __tty_ag_prompt_command_prompts
+#  __tty_ag_prompt_command_trays
   tput cnorm
 }
 
@@ -235,9 +366,7 @@ __tty_ag_main() {
   fi
 
   if ${__TTY_AG_LEFT_PROMPT}; then
-    local __TTY_AG_PS1_LEFT
-    __tty_ag_configure_prompt_left
-    PS1="${__TTY_AG_PS1_LEFT}"
+    __tty_ag_prompt_command_left
   fi
 
   PROMPT_COMMAND=__tty_ag_prompt_command
@@ -246,5 +375,3 @@ __tty_ag_main() {
 
 
 __tty_ag_main "${@}"
-
-}

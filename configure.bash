@@ -12,45 +12,46 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib/segment.bash"
 source "$(dirname "${BASH_SOURCE[0]}")/lib/parts.bash"
 
 
-__tty_ag_configure_prompt_left() {
+__tty_ag_configure_left_prompt() {
 
   history -a
   history -c
   history -r
 
   local pos='LEFT'
-  __tty_ag_prompt_begin "${pos}"
-  __tty_ag_segment      "${pos}" 'default' 'default'  ''
-  __tty_ag_segment      "${pos}" 'default' '+black'   '\!'
-  __tty_ag_segment      "${pos}" 'default' 'default'  ' '
-  __tty_ag_segment      "${pos}" 'default' '-yellow'  '\t'
-  __tty_ag_segment      "${pos}" '-blue'   '-black'   '\w '
-  __tty_ag_prompt_end   "${pos}"
+  __tty_ag_prompt_begin       "${pos}"
+  __tty_ag_segment            "${pos}" _         '+black'   '\!'
+  __tty_ag_segment            "${pos}" _         'default'  ' '
+  __tty_ag_segment            "${pos}" _         '-yellow'  '\t'
+  __tty_ag_prompt_status      "${pos}"
+  __tty_ag_segment            "${pos}" '+black'   '+white'   '\w'
+  __tty_ag_prompt_git         "${pos}"
+#  __tty_ag_prompt_virtualenv  "${pos}"
+  __tty_ag_prompt_end         "${pos}"
+
 }
 
 
-__tty_ag_configure_prompt_right() {
+__tty_ag_configure_right_prompt() {
   local pos='RIGHT'
   __tty_ag_prompt_begin "${pos}"
-  __tty_ag_segment      "${pos}" 'default' 'default'   ''
-  __tty_ag_segment      "${pos}" '-green'  '-black'  "${PWD}"
+  __tty_ag_segment      "${pos}" '+black'  'black'  "#${PWD}"
   __tty_ag_prompt_end   "${pos}"
 }
 
 
-__tty_ag_configure_prompt_under() {
+__tty_ag_configure_under_prompt() {
   local pos='UNDER'
   __tty_ag_prompt_begin       "${pos}"
   __tty_ag_prompt_git         "${pos}"
-  __tty_ag_prompt_arc         "${pos}"
-  __tty_ag_prompt_hg          "${pos}"
-  __tty_ag_prompt_virtualenv  "${pos}"
+#  __tty_ag_prompt_arc         "${pos}"
+#  __tty_ag_prompt_hg          "${pos}"
+
   __tty_ag_prompt_end         "${pos}"
 }
 
 
-
-__tty_ag_configure_tray_top() {
+__tty_ag_configure_tray_at_top() {
   DT="$(date '+%Y-%m-%d_%H-%M-%S-%N')"
 
   local pos='TOP'
@@ -59,7 +60,7 @@ __tty_ag_configure_tray_top() {
   __tty_ag_prompt_end   "${pos}"
 }
 
-__tty_ag_configure_tray_bottom() {
+__tty_ag_configure_tray_at_bottom() {
   DT="$(date '+%Y-%m-%d_%H-%M-%S-%N')"
 
   local pos='BOTTOM'
@@ -68,20 +69,4 @@ __tty_ag_configure_tray_bottom() {
   __tty_ag_segment      "${pos}" '+blue'   '-black'
   __tty_ag_segment      "${pos}" '-green'  '-black' "${DT}"
   __tty_ag_prompt_end   "${pos}"
-}
-
-
-__tty_ag_configure_startup() {
-  __tty_ag_configure_prompt_left
-}
-
-__tty_ag_configure_sync() {
-  __tty_ag_configure_prompt_left
-  __tty_ag_configure_prompt_right
-  __tty_ag_configure_prompt_under
-}
-
-__tty_ag_configure_async() {
-  __tty_ag_configure_tray_top
-  __tty_ag_configure_tray_bottom
 }
