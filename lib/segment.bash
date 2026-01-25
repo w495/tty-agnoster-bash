@@ -23,7 +23,7 @@ __tty_ag_segment_debug() {
   fi
 }
 
-__tty_ag_prompt_start() {
+__tty_ag_prompt_begin() {
   local position="${1}"
   local prompt_ref="__TTY_AG_PS1_${position}"
   local cur_bg_name_ref="__TTY_AG_CURRENT_BG_${position}"
@@ -42,12 +42,12 @@ __tty_ag_prompt_start() {
   eval "${cur_bg_name_ref}=''"
 }
 
-__tty_ag_prompt_start_all() {
-  __tty_ag_prompt_start 'LEFT'
-  __tty_ag_prompt_start 'RIGHT'
-  __tty_ag_prompt_start 'BOTTOM'
-  __tty_ag_prompt_start 'TOP'
-  __tty_ag_prompt_start 'UNDER'
+__tty_ag_prompt_begin_all() {
+  __tty_ag_prompt_begin 'LEFT'
+  __tty_ag_prompt_begin 'RIGHT'
+  __tty_ag_prompt_begin 'BOTTOM'
+  __tty_ag_prompt_begin 'TOP'
+  __tty_ag_prompt_begin 'UNDER'
 }
 
 # Begin a segment
@@ -97,7 +97,7 @@ __tty_ag_segment() {
     codes=("${codes[@]}" "${__tty_ag_fg_code}")
     __tty_ag_segment_debug "Added ${__tty_ag_fg_code} as fg to codes"
   fi
-  if [[ -n ${cur_bg_name}  && ${bg_name} != "${cur_bg_name}" ]]; then
+  if [[ -n ${cur_bg_name} && ${bg_name} != "${cur_bg_name}"  ]]; then
     __tty_ag_fg_code "${cur_bg_name}" > /dev/null
     __tty_ag_bg_code "${bg_name}" > /dev/null
     local -a intermediate=(
@@ -156,63 +156,4 @@ __tty_ag_prompt_end_all() {
   __tty_ag_prompt_end 'BOTTOM'
   __tty_ag_prompt_end 'TOP'
   __tty_ag_prompt_end 'UNDER'
-}
-
-
-
-__tty_ag_seg() {
-  local pos
-  local bg_name
-  local fg_name
-  local em_name
-  local text="${3}"
-
-  local opts
-  local this="${BASH_SOURCE[0]}"
-  opts=$(
-    getopt -n "${this}" -a -o 'p:b:f:e:t:' -l '
-    ps:,pos:,position:,
-    bg:,bag:,background:,
-    fg:,fog:,foreground:,
-    em:,emp:,emphasis:,
-    ef:,eff:,effect:,
-    tx:,txt:,text:
-  ' -- "${@}"
-  )
-  eval set -- "${opts}"
-
-  while [[ $# -gt 0 ]]; do
-    case ${1} in
-      -p | --ps | --pos | --position)
-        pos="${2}"
-        shift 2
-        ;;
-      -b | --bg | --bag | --background)
-        bg_name="${2}"
-        shift 2
-        ;;
-      -f | --fg | --fog | --foreground)
-        fg_name="${2}"
-        shift 2
-        ;;
-      -e | --em | --emp | --emphasis)
-        fg_name="${2}"
-        shift 2
-        ;;
-      -t | --tx | --txt | --text)
-        text="${2}"
-        shift 2
-        ;;
-      '--' | '')
-        shift 1
-        break
-        ;;
-      *)
-        echo "Unknown parameter '${1}'." >&2
-        shift 1
-        ;;
-    esac
-  done
-
-  __tty_ag_segment "${pos}" "${bg_name}" "${fg_name}" "${text}"
 }

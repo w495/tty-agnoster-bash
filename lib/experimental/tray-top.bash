@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # shellcheck enable=all
 
-__tty_ag_top_window() {
+source "$(dirname "${BASH_SOURCE[0]}")/../utils/format.bash"
+
+__tty_ag_top_tray() {
   tput sc
   local prompt="${1}"
 
@@ -12,13 +14,13 @@ __tty_ag_top_window() {
 
   tput csr "${line_len}" 0
   tput cup 0 "${line_len}"
-#
-#  prompt_x=$(echo "${prompt_flat}" | od -An -v -to1  -c )
-#
-#  printf '\n\n%s\n\n' "${prompt_x}" >&2
+  #
+  #  prompt_x=$(echo "${prompt_flat}" | od -An -v -to1  -c )
+  #
+  #  printf '\n\n%s\n\n' "${prompt_x}" >&2
 
   printf '%s' "${prompt}"
 
-  # Move cursor to home position, back in virtual window
+  # Move cursor to home position, back in virtual tray
   tput rc
 }

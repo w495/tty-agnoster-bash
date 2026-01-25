@@ -7,14 +7,16 @@
 # requires setting prompt_foo to use prompt vs PS1L
 # doesn't quite work
 
+source "$(dirname "${BASH_SOURCE[0]}")/../utils/format.bash"
+
 __tty_ag_right_prompt() {
-  tput sc
+
   local prompt="${1}"
-  # shellcheck disable=SC2312
-  prompt_flat=$(
-    printf '%b' "${prompt}" | ansi2txt | sed -re 's/\o001|\o002//g'
-  )
-  local -i line_len=$((COLUMNS + ${#prompt} - ${#prompt_flat}))
-  printf "\n%*s" "${line_len}" "${prompt}"
+  local __tty_ag_format_delta
+  __tty_ag_format_delta "${prompt}"
+  local -i line_len=$(("${COLUMNS}" + "${__tty_ag_format_delta}"))
+
+  tput sc
+  printf "%*s" "${line_len}" "${prompt}"
   tput rc
 }

@@ -21,28 +21,30 @@ __TTY_AG_SEGMENT_SEPARATOR_BOTTOM="▒░"
 __TTY_AG_SEGMENT_SEPARATOR_TOP=" "
 
 __TTY_AG_LEFT_PROMPT=false
-__TTY_AG_RIGHT_PROMPT="${__TTY_AG_EXPERIMENTAL_PROMPTS}"
-__TTY_AG_UNDER_PROMPT="${__TTY_AG_EXPERIMENTAL_PROMPTS}"
-__TTY_AG_RIGHT_WINDOW="${__TTY_AG_EXPERIMENTAL_PROMPTS}"
-__TTY_AG_BOTTOM_WINDOW="${__TTY_AG_EXPERIMENTAL_PROMPTS}"
-__TTY_AG_TOP_WINDOW="${__TTY_AG_EXPERIMENTAL_PROMPTS}"
+__TTY_AG_LEFT_PROMPT_COMPUTABLE=false
+__TTY_AG_RIGHT_PROMPT=false
+__TTY_AG_UNDER_PROMPT=false
+__TTY_AG_RIGHT_TRAY=false
+__TTY_AG_BOTTOM_TRAY=false
+__TTY_AG_TOP_TRAY=false
 
-__tty_ag_main() {
-  local opts
+__tty_ag_opts() {
+ local opts
   local this="${BASH_SOURCE[0]}"
   opts=$(
-    getopt -n "${this}" -a -o 'dvuU:s:lrRbt' -l '
+    getopt -n "${this}" -a -o 'dvuU:s:lLrRbt' -l '
     debug,verbose,
     user:,separator:,
     cs:,separator:,common-separator:,
     ls:,left-separator:,
     rs:,right-separator:,
     lp,left-prompt,
+    cp,computable-left-prompt,
     rp,right-prompt,
     up,under-prompt,
-    rw,right-window,
-    bw,bottom-window,
-    tw,top-window,
+    rt,right-tray,
+    bt,bottom-tray,
+    tt,top-tray,
   ' -- "${@}"
   )
   eval set -- "${opts}"
@@ -94,22 +96,27 @@ __tty_ag_main() {
         __TTY_AG_LEFT_PROMPT=true
         shift 1
         ;;
+      -L | --cp | --computable-left-prompt)
+        __TTY_AG_LEFT_PROMPT=true
+        __TTY_AG_LEFT_PROMPT_COMPUTABLE=true
+        shift 1
+        ;;
       -r | --rp | --right-prompt)
         __TTY_AG_RIGHT_PROMPT=true
-        __TTY_AG_RIGHT_WINDOW=false
+        __TTY_AG_RIGHT_TRAY=false
         shift 1
         ;;
-      -R | --rw | --right-window)
+      -R | --rt | --right-tray)
         __TTY_AG_RIGHT_PROMPT=false
-        __TTY_AG_RIGHT_WINDOW=true
+        __TTY_AG_RIGHT_TRAY=true
         shift 1
         ;;
-      -b | --bw | --bottom-window)
-        __TTY_AG_BOTTOM_WINDOW=true
+      -b | --bt | --bottom-tray)
+        __TTY_AG_BOTTOM_TRAY=true
         shift 1
         ;;
-      -t | --tw | --top-window)
-        __TTY_AG_TOP_WINDOW=true
+      -t | --tt | --top-tray)
+        __TTY_AG_TOP_TRAY=true
         shift 1
         ;;
       -u | --up | --under-prompt)
@@ -126,62 +133,118 @@ __tty_ag_main() {
         ;;
     esac
   done
+  __tty_ag_opts="${opts}"
+}
+
+
+
+
+__tty_ag_prompt_command_under() {
+  local __TTY_AG_PS1_UNDER
+  __tty_ag_configure_prompt_under
+  # Do not try put it into PS1.
+  __tty_ag_show_prompt_under "${__TTY_AG_PS1_UNDER}"
+}
+
+
+__tty_ag_prompt_command_right_prompt() {
+  local __TTY_AG_PS1_RIGHT
+  __tty_ag_configure_prompt_right
+  # Do not try put it into PS1.
+  __tty_ag_right_prompt "${__TTY_AG_PS1_RIGHT}"
+}
+
+
+__tty_ag_prompt_command_right_tray() {
+  local __TTY_AG_PS1_RIGHT
+  __tty_ag_configure_prompt_right
+  # Do not try put it into PS1.
+  __tty_ag_right_tray "${__TTY_AG_PS1_RIGHT}"
+}
+
+
+__tty_ag_prompt_command_if_right() {
+  if ${__TTY_AG_RIGHT_PROMPT}; then
+    __tty_ag_prompt_command_right_prompt
+  elif ${__TTY_AG_RIGHT_TRAY}; then
+    __tty_ag_prompt_command_right_tray
+  fi
+}
+
+
+__tty_ag_prompt_command_top() {
+  local __TTY_AG_PS1_TOP
+  __tty_ag_configure_tray_top
+  # Do not try put it into PS1.
+  __tty_ag_tray_at_top "${__TTY_AG_PS1_TOP}"
+}
+
+__tty_ag_prompt_command_bottom() {
+  local __TTY_AG_PS1_BOTTOM
+  __tty_ag_configure_tray_bottom
+  # Do not try put it into PS1.
+  __tty_ag_tray_bottom "${__TTY_AG_PS1_BOTTOM}"
+}
+
+
+__tty_ag_prompt_command_if_top() {
+  if ${__TTY_AG_TOP_TRAY}; then
+    __tty_ag_prompt_command_top
+  fi
+}
+
+__tty_ag_prompt_command_if_under() {
+  if ${__TTY_AG_UNDER_PROMPT}; then
+    __tty_ag_prompt_command_under
+  fi
+}
+
+__tty_ag_prompt_command_if_bottom() {
+  if ${__TTY_AG_BOTTOM_TRAY}; then
+    __tty_ag_prompt_command_bottom
+  fi
+}
+
+__tty_ag_prompt_command_sync() {
+  __tty_ag_prompt_command_if_under
+  __tty_ag_prompt_command_if_right
+}
+
+__tty_ag_prompt_command_async() {
+  printf '%b' "\0033]0;${PWD}\a"
+  __tty_ag_prompt_command_if_top
+  __tty_ag_prompt_command_if_bottom
+}
+
+__tty_ag_prompt_command() {
+  local __TTY_AG_RETVAL=$?
+
+  tput civis
+  __tty_ag_prompt_command_async
+  __tty_ag_prompt_command_sync
+  tput cnorm
+}
+
+
+__tty_ag_main() {
+  local __tty_ag_opts
+  __tty_ag_opts "${@}"
 
   if ${__TTY_AG_VERBOSE_MODE}; then
-    printf "%b" "\0033[41m# options = ${opts}|\0033[0m\n"
+    printf "%b" "\0033[41m# opts = ${__tty_ag_opts}\0033[0m\n"
   fi
 
-  local __TTY_AG_PS1_LEFT
-  __tty_ag_build_prompt_sync
   if ${__TTY_AG_LEFT_PROMPT}; then
+    local __TTY_AG_PS1_LEFT
+    __tty_ag_configure_prompt_left
     PS1="${__TTY_AG_PS1_LEFT}"
   fi
 
   PROMPT_COMMAND=__tty_ag_prompt_command
 }
 
-__tty_ag_prompt_command() {
 
-  (__tty_ag_prompt_command_async &)
-}
-
-__tty_ag_prompt_command_async() {
-  local __TTY_AG_RETVAL=$?
-
-  local __TTY_AG_PS1_LEFT
-  local __TTY_AG_PS1_RIGHT
-  local __TTY_AG_PS1_BOTTOM
-  local __TTY_AG_PS1_TOP
-  local __TTY_AG_PS1_UNDER
-
-  # rename console tab
-  (
-    printf '%b' "\0033]0;${PWD}\a" &
-  )
-
-  __tty_ag_build_prompt_async
-
-  if ${__TTY_AG_TOP_WINDOW}; then
-    __tty_ag_top_window "${__TTY_AG_PS1_TOP}"
-  fi
-  if ${__TTY_AG_UNDER_PROMPT}; then
-    # Do not try put it into PS1.
-    __tty_ag_under_prompt "${__TTY_AG_PS1_UNDER}"
-  fi
-  if ${__TTY_AG_RIGHT_PROMPT}; then
-      # Do not try put it into PS1.
-      __tty_ag_right_prompt "${__TTY_AG_PS1_RIGHT}"
-  elif ${__TTY_AG_RIGHT_WINDOW}; then
-      # Do not try put it into PS1.
-      __tty_ag_right_window "${__TTY_AG_PS1_RIGHT}"
-  fi
-  if ${__TTY_AG_BOTTOM_WINDOW}; then
-    # Do not try put it into PS1.
-      __tty_ag_bottom_window "${__TTY_AG_PS1_BOTTOM}"
-  fi
-
-
-
-}
 
 __tty_ag_main "${@}"
+
+}
