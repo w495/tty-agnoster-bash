@@ -171,11 +171,3 @@ __tty_ag_prompt_end() {
   eval "${prompt_ref}='${prompt}${__tty_ag_format_tail}'"
   eval "${old_bg_name_ref}=''"
 }
-
-__tty_ag_prompt_end_all() {
-  __tty_ag_prompt_end 'LEFT'
-  __tty_ag_prompt_end 'RIGHT'
-  __tty_ag_prompt_end 'BOTTOM'
-  __tty_ag_prompt_end 'TOP'
-  __tty_ag_prompt_end 'UNDER'
-}
