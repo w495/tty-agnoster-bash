@@ -11,7 +11,6 @@
 source "$(dirname "${BASH_SOURCE[0]}")/lib/segment.bash"
 source "$(dirname "${BASH_SOURCE[0]}")/lib/parts.bash"
 
-
 __tty_ag_configure_left_prompt() {
 
   history -a
@@ -25,11 +24,10 @@ __tty_ag_configure_left_prompt() {
   __tty_ag_prompt_status      "${pos}" +black
   __tty_ag_segment            "${pos}" +black   null   '\w'
   __tty_ag_prompt_git         "${pos}"
-#  __tty_ag_prompt_virtualenv  "${pos}"
+  #  __tty_ag_prompt_virtualenv  "${pos}"
   __tty_ag_prompt_end         "${pos}"
 
 }
-
 
 __tty_ag_configure_right_prompt() {
   local pos='RIGHT'
@@ -38,17 +36,15 @@ __tty_ag_configure_right_prompt() {
   __tty_ag_prompt_end   "${pos}"
 }
 
-
 __tty_ag_configure_under_prompt() {
   local pos='UNDER'
   __tty_ag_prompt_begin       "${pos}"
   __tty_ag_prompt_git         "${pos}"
-#  __tty_ag_prompt_arc         "${pos}"
-#  __tty_ag_prompt_hg          "${pos}"
+  #  __tty_ag_prompt_arc         "${pos}"
+  #  __tty_ag_prompt_hg          "${pos}"
 
   __tty_ag_prompt_end         "${pos}"
 }
-
 
 __tty_ag_configure_tray_at_top() {
   DT="$(date '+%Y-%m-%d_%H-%M-%S-%N')"

@@ -17,7 +17,6 @@ source "$(dirname "${BASH_SOURCE[0]}")/configure.bash"
 __TTY_AG_DEFAULT_USER="${USER}"
 __TTY_AG_EXPERIMENTAL_PROMPTS=false
 
-
 # Code page ~737
 __TTY_AG_SEGMENT_SEPARATOR_FORWARD_LEFT='█▒░ ' # █▒░
 __TTY_AG_SEGMENT_SEPARATOR_REVERSE_LEFT=$(
@@ -44,7 +43,6 @@ __TTY_AG_SEGMENT_SEPARATOR_REVERSE_TOP=$(
   printf '%s' "${__TTY_AG_SEGMENT_SEPARATOR_FORWARD_TOP}" | rev
 )
 
-
 __TTY_AG_LEFT_PROMPT=false
 __TTY_AG_LEFT_PROMPT_COMPUTABLE=false
 __TTY_AG_RIGHT_PROMPT=false
@@ -54,7 +52,7 @@ __TTY_AG_BOTTOM_TRAY=false
 __TTY_AG_TOP_TRAY=false
 
 __tty_ag_opts() {
- local opts
+  local opts
   local this="${BASH_SOURCE[0]}"
   opts=$(
     getopt -n "${this}" -a -o 'dvuU:s:lLrRbt' -l '
@@ -258,7 +256,6 @@ __tty_ag_opts() {
   __tty_ag_opts="${opts}"
 }
 
-
 __tty_ag_prompt_command_top() {
   local __TTY_AG_PS1_TOP
   __tty_ag_configure_tray_at_top
@@ -290,7 +287,6 @@ __tty_ag_prompt_command_right_tray() {
   # Do not try put it into PS1.
   __tty_ag_show_tray_at_right "${__TTY_AG_PS1_RIGHT}"
 }
-
 
 __tty_ag_prompt_command_bottom() {
   local __TTY_AG_PS1_BOTTOM
@@ -351,13 +347,11 @@ __tty_ag_prompt_command() {
 
   __tty_ag_prompt_command_title
 
-
   tput civis
   __tty_ag_prompt_command_prompts
   __tty_ag_prompt_command_trays
   tput cnorm
 }
-
 
 __tty_ag_main() {
   local __tty_ag_opts
@@ -371,6 +365,5 @@ __tty_ag_main() {
 
   PROMPT_COMMAND=__tty_ag_prompt_command
 }
-
 
 __tty_ag_main "${@}"
