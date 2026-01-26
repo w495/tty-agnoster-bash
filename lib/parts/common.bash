@@ -9,7 +9,6 @@ source "$(dirname "${BASH_SOURCE[0]}")/../segment.bash"
 
 __TTY_AG_DEFAULT_USER='_'
 __TTY_AG_RETVAL=$?
-__TTY_AG_BASH_COMMAND="${BASH_COMMAND}"
 
 # Context: user@hostname (who am I and where am I)
 __tty_ag_prompt_context() {

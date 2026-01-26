@@ -15,7 +15,6 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib/experimental.bash"
 source "$(dirname "${BASH_SOURCE[0]}")/configure.bash"
 
 __TTY_AG_DEFAULT_USER="${USER}"
-__TTY_AG_EXPERIMENTAL_PROMPTS=false
 
 # Code page ~737
 __TTY_AG_SEGMENT_SEPARATOR_FORWARD_LEFT='█▒░ ' # █▒░
@@ -50,56 +49,81 @@ __TTY_AG_UNDER_PROMPT=false
 __TTY_AG_RIGHT_TRAY=false
 __TTY_AG_BOTTOM_TRAY=false
 __TTY_AG_TOP_TRAY=false
+__TTY_AG_OPTIONS=''
 
-__tty_ag_opts() {
+
+__TTY_AG_OPTS_SHORT='dDvVolLcCrRbBtTuUs:'
+__TTY_AG_OPTS_LONG='
+op,opts,options,
+db,debug,
+nd,no-debug,
+vb,verbose,
+nv,no-verbose,
+cp,   computable-left-prompt,
+nc,   no-computable-left-prompt,
+lp,   left-prompt,
+nl,   no-left-prompt,
+rp,   right-prompt,
+nr,   no-right-prompt,
+up,   under-prompt,
+nu,   no-under-prompt,
+bt,   bottom-tray,
+nb,   no-bottom-tray,
+tt,   top-tray,
+nt,   no-top-tray,
+me:,  user:,
+cs:,  sep:,   separator:,               common-separator:,
+cf:,  cfs:,   forward-separator:,       common-forward-separator:,
+cr:,  crs:,   reverse-separator:,       common-reverse-separator:,
+ls:,          left-separator:,
+lf:,  lfs:,   left-forward-separator:,
+lr:,  lrs:,   left-reverse-separator:,
+rs:,          right-separator:,
+rf:,  rfs:,   right-forward-separator:,
+rr:,  rrs:,   right-reverse-separator:,
+us:,          under-separator:,
+uf:,  ufs:,   under-forward-separator:,
+ur:,  urs:,   under-reverse-separator:,
+bs:,          bottom-separator:,
+bf:,  bfs:,   bottom-forward-separator:,
+br:,  brs:,   bottom-reverse-separator:,
+ts:,          top-separator:,
+tf:,  tfs:,   top-forward-separator:,
+tr:,  trs:,   top-reverse-separator:,
+'
+
+__tty_ag_options() {
   local opts
   local this="${BASH_SOURCE[0]}"
   opts=$(
-    getopt -n "${this}" -a -o 'dvuU:s:lLrRbt' -l '
-    debug,verbose,
-    user:,separator:,
-    cs:,separator:,common-separator:,
-    cfs:,forward-separator:,common-forward-separator:,
-    crs:,reverse-separator:,common-reverse-separator:,
-    ls:,left-separator:,
-    lfs:,left-forward-separator:,
-    lrs:,left-reverse-separator:,
-    rs:,right-separator:,
-    rfs:,right-forward-separator:,
-    rrs:,right-reverse-separator:,
-    us:,under-separator:,
-    ufs:,under-forward-separator:,
-    urs:,under-reverse-separator:,
-    bs:,bottom-separator:,
-    bfs:,bottom-forward-separator:,
-    brs:,bottom-reverse-separator:,
-    ts:,top-separator:,
-    tfs:,top-forward-separator:,
-    trs:,top-reverse-separator:,
-    lp,left-prompt,
-    cp,computable-left-prompt,
-    rp,right-prompt,
-    up,under-prompt,
-    rt,right-tray,
-    bt,bottom-tray,
-    tt,top-tray,
-  ' -- "${@}"
+    getopt -n "${this}" -a -o "
+      ${__TTY_AG_OPTS_SHORT}
+    " -l "
+      ${__TTY_AG_OPTS_LONG}
+    " -- "${@}"
   )
   eval set -- "${opts}"
 
   while [[ $# -gt 0 ]]; do
     case ${1} in
-      -U | --user)
-        __TTY_AG_DEFAULT_USER="${2}"
-        shift 2
-        ;;
-      -d | --debug)
+      -d | --db |--debug)
         __TTY_AG_DEBUG_MODE=true
+        shift 1
+        ;;
+      -D | --nd | --no-debug)
+        __TTY_AG_DEBUG_MODE=false
+        shift 1
+        ;;
+      -v | --vb | --verbose)
         __TTY_AG_VERBOSE_MODE=true
         shift 1
         ;;
-      -v | --verbose)
-        __TTY_AG_VERBOSE_MODE=true
+      -V | --nv | --no-verbose)
+        __TTY_AG_VERBOSE_MODE=false
+        shift 1
+        ;;
+      -o | --op | --opts | --options)
+        printf '%s\n' "${__TTY_AG_OPTIONS}"
         shift 1
         ;;
       -s | --cs | --separator | --common-separator)
@@ -118,7 +142,7 @@ __tty_ag_opts() {
         __TTY_AG_SEGMENT_SEPARATOR_REVERSE_UNDER="${reverse}"
         shift 2
         ;;
-      -f | --cfs | --forward-separator | --common-forward-separator)
+      --cf | --cfs | --forward-separator | --common-forward-separator)
         local forward="${2}"
         __TTY_AG_SEGMENT_SEPARATOR_FORWARD_LEFT="${forward}"
         __TTY_AG_SEGMENT_SEPARATOR_FORWARD_RIGHT="${forward}"
@@ -127,7 +151,7 @@ __tty_ag_opts() {
         __TTY_AG_SEGMENT_SEPARATOR_FORWARD_UNDER="${forward}"
         shift 2
         ;;
-      -S | --crs | --reverse-separator | --common-reverse-separator)
+      --cr | --crs | --reverse-separator | --common-reverse-separator)
         local reverse
         reverse=$(printf '%s' "${2}" | rev)
         __TTY_AG_SEGMENT_SEPARATOR_REVERSE_LEFT="${reverse}"
@@ -172,76 +196,97 @@ __tty_ag_opts() {
         )
         shift 2
         ;;
-      --lfs | --left-forward-separator)
+      --lf | --lfs |--left-forward-separator)
         __TTY_AG_SEGMENT_SEPARATOR_FORWARD_LEFT="${2}"
         shift 2
         ;;
-      --rfs | --right-forward-separator)
+      --rf | --rfs |--right-forward-separator)
         __TTY_AG_SEGMENT_SEPARATOR_FORWARD_RIGHT="${2}"
         shift 2
         ;;
-      --bfs | --bottom-forward-separator)
+      --bf | --bfs |--bottom-forward-separator)
         __TTY_AG_SEGMENT_SEPARATOR_FORWARD_BOTTOM="${2}"
         shift 2
         ;;
-      --tfs | --top-forward-separator)
+      --tf | --tfs |--top-forward-separator)
         __TTY_AG_SEGMENT_SEPARATOR_FORWARD_TOP="${2}"
         shift 2
         ;;
-      --ufs | --under-forward-separator)
+      --uf | --ufs |--under-forward-separator)
         __TTY_AG_SEGMENT_SEPARATOR_FORWARD_UNDER="${2}"
         shift 2
         ;;
-      --lrs | --left-reverse-separator)
+      --lr | --lrs |--left-reverse-separator)
         __TTY_AG_SEGMENT_SEPARATOR_REVERSE_LEFT="${2}"
         shift 2
         ;;
-      --rrs | --right-reverse-separator)
+      --rr | --rrs |--right-reverse-separator)
         __TTY_AG_SEGMENT_SEPARATOR_REVERSE_RIGHT="${2}"
         shift 2
         ;;
-      --brs | --bottom-reverse-separator)
+      --br | --brs |--bottom-reverse-separator)
         __TTY_AG_SEGMENT_SEPARATOR_REVERSE_BOTTOM="${2}"
         shift 2
         ;;
-      --trs | --top-reverse-separator)
+      --tr | --trs |--top-reverse-separator)
         __TTY_AG_SEGMENT_SEPARATOR_REVERSE_TOP="${2}"
         shift 2
         ;;
-      --urs | --under-reverse-separator)
+      --ur | --urs |--under-reverse-separator)
         __TTY_AG_SEGMENT_SEPARATOR_REVERSE_UNDER="${2}"
         shift 2
         ;;
-      -l | --lp | --left-prompt)
+      -l | --lp | --left-prompt | --with-left-prompt )
         __TTY_AG_LEFT_PROMPT=true
         shift 1
         ;;
-      -L | --cp | --computable-left-prompt)
-        __TTY_AG_LEFT_PROMPT=true
+      -L | --nl | --no-left-prompt)
+        __TTY_AG_LEFT_PROMPT=false
+        shift 1
+        ;;
+      -c | --cp | --computable-left-prompt | --with-computable-left-prompt )
         __TTY_AG_LEFT_PROMPT_COMPUTABLE=true
+        shift 1
+        ;;
+      -C | --nc | --no-computable-left-prompt)
+        __TTY_AG_LEFT_PROMPT_COMPUTABLE=false
         shift 1
         ;;
       -r | --rp | --right-prompt)
         __TTY_AG_RIGHT_PROMPT=true
-        __TTY_AG_RIGHT_TRAY=false
         shift 1
         ;;
-      -R | --rt | --right-tray)
+      -R | --nr | --no-right-prompt)
         __TTY_AG_RIGHT_PROMPT=false
-        __TTY_AG_RIGHT_TRAY=true
         shift 1
         ;;
       -b | --bt | --bottom-tray)
         __TTY_AG_BOTTOM_TRAY=true
         shift 1
         ;;
+      -B | --nb | --no-bottom-tray)
+        __TTY_AG_BOTTOM_TRAY=false
+        shift 1
+        ;;
       -t | --tt | --top-tray)
         __TTY_AG_TOP_TRAY=true
+        shift 1
+        ;;
+      -T | --nt | --no-top-tray)
+        __TTY_AG_TOP_TRAY=false
         shift 1
         ;;
       -u | --up | --under-prompt)
         __TTY_AG_UNDER_PROMPT=true
         shift 1
+        ;;
+      -U | --nu | --no-under-prompt)
+        __TTY_AG_UNDER_PROMPT=false
+        shift 1
+        ;;
+      -m | --me | --user)
+        __TTY_AG_DEFAULT_USER="${2}"
+        shift 2
         ;;
       '--' | '')
         shift 1
@@ -253,7 +298,11 @@ __tty_ag_opts() {
         ;;
     esac
   done
-  __tty_ag_opts="${opts}"
+  __tty_ag_options="${opts}"
+  __TTY_AG_OPTIONS="${__tty_ag_options}"
+  if ${__TTY_AG_VERBOSE_MODE}; then
+    printf "%b" "\0033[41m# opts = ${__TTY_AG_OPTIONS}\0033[0m\n"
+  fi
 }
 
 __tty_ag_prompt_command_top() {
@@ -354,16 +403,36 @@ __tty_ag_prompt_command() {
 }
 
 __tty_ag_main() {
-  local __tty_ag_opts
-  __tty_ag_opts "${@}"
+  __tty_ag_options "${@}"
 
-  if ${__TTY_AG_VERBOSE_MODE}; then
-    printf "%b" "\0033[41m# opts = ${__tty_ag_opts}\0033[0m\n"
+  if ${__TTY_AG_LEFT_PROMPT}; then
+    __tty_ag_prompt_command_left
   fi
-
-  __tty_ag_prompt_command_if_left
 
   PROMPT_COMMAND=__tty_ag_prompt_command
 }
 
+
 __tty_ag_main "${@}"
+
+flags="
+  --options
+  --debug
+  --no-debug
+  --verbose
+  --no-verbose
+  --computable-left-prompt
+  --no-computable-left-prompt
+  --left-prompt
+  --no-left-prompt
+  --right-prompt
+  --no-right-prompt
+  --under-prompt
+  --no-under-prompt
+  --bottom-tray
+  --no-bottom-tray
+  --top-tray
+  --no-top-tray
+"
+
+complete -W "${flags}"  __tty_ag_options
