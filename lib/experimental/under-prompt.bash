@@ -20,6 +20,6 @@ __tty_ag_show_under_prompt() {
   local -i text_width=$(("${COLUMNS}" + "${__tty_ag_format_delta}"))
 
   tput sc
-  printf "%*s" "${text_width}" "${text}"
+  printf "\n%*s" "${text_width}" "${text}"
   tput rc
 }
