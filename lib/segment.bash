@@ -9,11 +9,11 @@ __TTY_AG_DEBUG_MODE=false
 
 source "$(dirname "${BASH_SOURCE[0]}")/utils.bash"
 
-__tty_ag_em_code reset 
+__tty_ag_em_code reset
 __TTY_AG_EM_CODE_RESET="${__tty_ag_em_code}"
 
 __tty_ag_segment_debug() {
-  if [[ ${__TTY_AG_DEBUG_MODE} == true ]]; then
+  if ${__TTY_AG_DEBUG_MODE}; then
     local -ir offset=1
     local -r func="${FUNCNAME[${offset}]}"
     local -r line="${BASH_LINENO[${offset}]}"
@@ -29,13 +29,10 @@ __tty_ag_prompt_begin() {
   local old_bg_name_ref="__TTY_AG_OLD_BG_${position}"
   local old_fg_name_ref="__TTY_AG_OLD_FG_${position}"
 
-
   eval "${prompt_ref}=''"
   eval "${old_bg_name_ref}=''"
   eval "${old_fg_name_ref}=''"
-
 }
-
 
 # Begin a segment
 # Takes two arguments, background and foreground. Both can be omitted,
@@ -82,7 +79,6 @@ __tty_ag_segment() {
   local -i __tty_ag_bg_code
   local __tty_ag_format_head
 
-
   __tty_ag_bg_code "${old_bg_name}"
   local -i old_bg_code="${__tty_ag_bg_code}"
   __tty_ag_fg_code "${old_fg_name}"
@@ -92,7 +88,6 @@ __tty_ag_segment() {
   local -i new_bg_code="${__tty_ag_bg_code}"
   __tty_ag_fg_code "${new_fg_name}"
   local -i new_fg_code="${__tty_ag_fg_code}"
-
 
   # -----------------------------------------------------------------
   # Show separator
@@ -139,7 +134,6 @@ __tty_ag_segment() {
   if [[ -n ${text} ]]; then
     prompt="${prompt}${text}"
   fi
-
 
   eval "${prompt_ref}='${prompt}'"
   eval "${old_bg_name_ref}='${new_bg_name}'"

@@ -11,7 +11,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/bg-code.bash"
 __TTY_AG_DEBUG_MODE=false
 
 __tty_ag_format_debug() {
-  if [[ ${__TTY_AG_DEBUG_MODE} == true ]]; then
+  if ${__TTY_AG_DEBUG_MODE}; then
     local -ir offset=1
     local -r func="${FUNCNAME[${offset}]}"
     local -r line="${BASH_LINENO[${offset}]}"
@@ -21,6 +21,7 @@ __tty_ag_format_debug() {
 }
 
 __tty_ag_format_fg() {
+  # It uses global var to avoid subshells.
   local __tty_ag_fg_code
   local __tty_ag_format
   __tty_ag_fg_code "${1}"
@@ -29,6 +30,7 @@ __tty_ag_format_fg() {
 }
 
 __tty_ag_format_bg() {
+  # It uses global var to avoid subshells.
   local __tty_ag_bg_code
   local __tty_ag_format
   __tty_ag_bg_code "${1}"
@@ -37,6 +39,7 @@ __tty_ag_format_bg() {
 }
 
 __tty_ag_format_head() {
+  # It uses global var to avoid subshells.
   local code_seq="${*}"
   __tty_ag_format_debug "code_seq: ${code_seq}"
   local seq=''
@@ -50,11 +53,8 @@ __tty_ag_format_head() {
   printf -v __tty_ag_format_head "%b" "\0001\0033[${seq}m\0002"
 }
 
-__tty_ag_format_reset() {
-  printf -v __tty_ag_format_reset "%b" "\0001\0033[0m\0002"
-}
-
 __tty_ag_format_tail() {
+  # It uses global var to avoid subshells.
   printf -v __tty_ag_format_tail "%b" "\0001\0033[0m\0002"
 }
 
@@ -97,6 +97,7 @@ __tty_ag_format_bytes_number() {
 }
 
 __tty_ag_format_delta() {
+  # It uses global var to avoid subshells.
   local -i bytes_number
   bytes_number=$(__tty_ag_format_bytes_number "${1}")
   local -i chars_number
