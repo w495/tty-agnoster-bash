@@ -4,46 +4,49 @@
 source "$(dirname "${BASH_SOURCE[0]}")/../utils/format.bash"
 
 
-# ----------------------------------------------------------------
-# |> echo 'Some text'                            <tray_at_right> |
-# |Some text                                                     |
-# |>                                                             |
-# |                                                              |
-# |                                                              |
-# ----------------------------------------------------------------
+__tty_ag_cursor_position() {
+  local cursor_position
+  local -i cursor_row
+
+  stty -echo
+  echo -n $'\e[6n';
+  # shellcheck disable=SC2162
+  read -dR cursor_position
+  stty echo;
+  __tty_ag_cursor_position="${cursor_position#??}"
+}
+
+
 
 __tty_ag_show_tray_at_right() {
-  tput init
+  # ----------------------------------------------------------------
+  # |> echo 'Some text'                            <tray_at_right> |
+  # |Some text                                                     |
+  # |>                                                             |
+  # |                                                              |
+  # |                                                              |
+  # ----------------------------------------------------------------
   local prompt="${1}"
-  local __tty_ag_format_delta
-  __tty_ag_format_delta "${prompt}"
+  local -i chars_number=0
   chars_number=$(__tty_ag_format_chars_number "${prompt}")
-  local -i line_len=$(("${COLUMNS}" - "${chars_number}" ))
+  local -i col_len=$(( "${COLUMNS}" - "${chars_number}" ))
 
-  local row col
-  local -i cursor_row
-  IFS=';' read -p $'\e[6n' -d R -rs row col || return 1
-  cursor_row="${row:2}"
+
+  local __tty_ag_cursor_position
+  __tty_ag_cursor_position
+  local -i cursor_row="${__tty_ag_cursor_position%%;*}"
 
   local -i win_row="${cursor_row}"
-  win_row="$(( "${cursor_row}" - 0 ))"
+  win_row="$(( "${cursor_row}" - 1 ))"
   local -i cur_row
   cur_row="$(( "${cursor_row}" - 1 ))"
 
-  local -i  win_line
-  win_line="$(( "${line_len}" - 1 ))"
+  local -i  win_col
+  win_col="$(( "${col_len}" - 1 ))"
 
   tput sc
-  tput csr "${win_line}" "${win_row}"
-  tput cup "${cur_row}" "${line_len}"
-  printf '%s' "${prompt}"
+  tput csr "${win_col}" "${win_row}"
+  tput cup "${cur_row}" "${col_len}"
+  printf '%b' "${prompt}"
   tput rc
-}
-
-__tty_ag_cursor() {
-  local row col
-  IFS=';' read -p $'\e[6n' -d R -rs row col || return 1
-  row="${row:2}"
-  __tty_ag_cursor__row="${row}"
-  __tty_ag_cursor__col="${col}"
 }

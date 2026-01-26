@@ -101,5 +101,5 @@ __tty_ag_format_delta() {
   bytes_number=$(__tty_ag_format_bytes_number "${1}")
   local -i chars_number
   chars_number=$(__tty_ag_format_chars_number "${1}")
-  __tty_ag_format_delta=$(("${bytes_number}" - "${chars_number}"))
+  __tty_ag_format_delta=$(( "${bytes_number}" - "${chars_number}" ))
 }

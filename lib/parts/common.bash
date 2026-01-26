@@ -10,6 +10,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../segment.bash"
 
 __TTY_AG_DEFAULT_USER='_'
 __TTY_AG_RETVAL=$?
+__TTY_AG_BASH_COMMAND="${BASH_COMMAND}"
 
 # Context: user@hostname (who am I and where am I)
 __tty_ag_prompt_context() {
@@ -108,7 +109,6 @@ __tty_ag_prompt_full_pwd() {
 # - am I root
 # - are there background jobs?
 __tty_ag_prompt_status() {
-  local __tty_ag_format_fg
   if [[ ${__TTY_AG_RETVAL} -ne 0 ]]; then
     __tty_ag_segment "${1}" "${2}" '-red' "[x]"
   fi

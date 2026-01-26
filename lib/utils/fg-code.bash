@@ -6,8 +6,9 @@
 # ---------------------------------------------------------------
 
 __tty_ag_fg_code() {
-  # It uses global var to reduce subshells
-  case "${1}" in
+  # It uses global var to avoid subshells
+  local -l color_name="${1}"
+  case "${color_name}" in
     -black)
       __tty_ag_fg_code=30
       ;;

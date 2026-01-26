@@ -20,11 +20,10 @@ __tty_ag_configure_left_prompt() {
 
   local pos='LEFT'
   __tty_ag_prompt_begin       "${pos}"
-  __tty_ag_segment            "${pos}" _         '+black'   '\!'
-  __tty_ag_segment            "${pos}" _         'default'  ' '
-  __tty_ag_segment            "${pos}" _         '-yellow'  '\t'
-  __tty_ag_prompt_status      "${pos}"
-  __tty_ag_segment            "${pos}" '+black'   '+white'   '\w'
+  __tty_ag_segment            "${pos}" null     +black   '\!'
+  __tty_ag_segment            "${pos}" null     -yellow  '\t'
+  __tty_ag_prompt_status      "${pos}" +black
+  __tty_ag_segment            "${pos}" +black   null   '\w'
   __tty_ag_prompt_git         "${pos}"
 #  __tty_ag_prompt_virtualenv  "${pos}"
   __tty_ag_prompt_end         "${pos}"
@@ -35,7 +34,7 @@ __tty_ag_configure_left_prompt() {
 __tty_ag_configure_right_prompt() {
   local pos='RIGHT'
   __tty_ag_prompt_begin "${pos}"
-  __tty_ag_segment      "${pos}" '+black'  'black'  "#${PWD}"
+  __tty_ag_segment      "${pos}" '+black'  '-black'  "# ${PWD}"
   __tty_ag_prompt_end   "${pos}"
 }
 

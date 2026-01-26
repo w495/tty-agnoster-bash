@@ -6,8 +6,9 @@
 # ---------------------------------------------------------------
 
 __tty_ag_bg_code() {
-  # It uses global var to reduce subshells
-  case "${1}" in
+  # It uses global var to avoid subshells
+  local -l color_name="${1}"
+  case "${color_name}" in
     -black)
       __tty_ag_bg_code=40
       ;;
@@ -58,7 +59,6 @@ __tty_ag_bg_code() {
       ;;
     *)
       __tty_ag_bg_code=0
-      return 1
       ;;
   esac
 }

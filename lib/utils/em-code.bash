@@ -6,8 +6,9 @@
 # ---------------------------------------------------------------
 
 __tty_ag_em_code() {
-  # It uses global var to reduce subshells
-  case "$1" in
+  # It uses global var to avoid subshells
+  local -l emphasis_name="${1}"
+  case "${emphasis_name}" in
     reset)
       __tty_ag_em_code=0
       ;;
@@ -30,7 +31,7 @@ __tty_ag_em_code() {
       __tty_ag_em_code=9
       ;;
     *)
-      __tty_ag_em_code=''
+      __tty_ag_em_code=0
       ;;
   esac
 }

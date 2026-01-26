@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # shellcheck enable=all
 
+set -E -o functrace
+
 # ---------------------------------------------------------------
 #     shfmt -ci -i 2 -sr -s -bn -kp -ln bash -d
 # ---------------------------------------------------------------
@@ -17,27 +19,27 @@ __TTY_AG_EXPERIMENTAL_PROMPTS=false
 
 
 # Code page ~737
-__TTY_AG_SEGMENT_SEPARATOR_FORWARD_LEFT='▒░' # █▒░
+__TTY_AG_SEGMENT_SEPARATOR_FORWARD_LEFT='█▒░ ' # █▒░
 __TTY_AG_SEGMENT_SEPARATOR_REVERSE_LEFT=$(
   printf '%s' "${__TTY_AG_SEGMENT_SEPARATOR_FORWARD_LEFT}" | rev
 )
 
-__TTY_AG_SEGMENT_SEPARATOR_FORWARD_RIGHT='▒░'
+__TTY_AG_SEGMENT_SEPARATOR_FORWARD_RIGHT='█▒░ '
 __TTY_AG_SEGMENT_SEPARATOR_REVERSE_RIGHT=$(
   printf '%s' "${__TTY_AG_SEGMENT_SEPARATOR_FORWARD_RIGHT}" | rev
 )
 
-__TTY_AG_SEGMENT_SEPARATOR_FORWARD_UNDER='▒░'
+__TTY_AG_SEGMENT_SEPARATOR_FORWARD_UNDER='█▒░ '
 __TTY_AG_SEGMENT_SEPARATOR_REVERSE_UNDER=$(
   printf '%s' "${__TTY_AG_SEGMENT_SEPARATOR_FORWARD_UNDER}" | rev
 )
 
-__TTY_AG_SEGMENT_SEPARATOR_FORWARD_BOTTOM='▒░'
+__TTY_AG_SEGMENT_SEPARATOR_FORWARD_BOTTOM='█▒░ '
 __TTY_AG_SEGMENT_SEPARATOR_REVERSE_BOTTOM=$(
   printf '%s' "${__TTY_AG_SEGMENT_SEPARATOR_REVERSE_BOTTOM}" | rev
 )
 
-__TTY_AG_SEGMENT_SEPARATOR_FORWARD_TOP=' '
+__TTY_AG_SEGMENT_SEPARATOR_FORWARD_TOP='█▒░ '
 __TTY_AG_SEGMENT_SEPARATOR_REVERSE_TOP=$(
   printf '%s' "${__TTY_AG_SEGMENT_SEPARATOR_FORWARD_TOP}" | rev
 )
@@ -316,13 +318,11 @@ __tty_ag_prompt_command_if_under() {
 }
 
 __tty_ag_prompt_command_if_right() {
-   __tty_ag_prompt_command_right_tray
-
-#  if ${__TTY_AG_RIGHT_PROMPT}; then
-#    __tty_ag_prompt_command_right_prompt
-#  elif ${__TTY_AG_RIGHT_TRAY}; then
-#    __tty_ag_prompt_command_right_tray
-#  fi
+  if ${__TTY_AG_RIGHT_PROMPT}; then
+    __tty_ag_prompt_command_right_prompt
+  elif ${__TTY_AG_RIGHT_TRAY}; then
+    __tty_ag_prompt_command_right_tray
+  fi
 }
 
 __tty_ag_prompt_command_if_bottom() {
@@ -333,8 +333,8 @@ __tty_ag_prompt_command_if_bottom() {
 
 __tty_ag_prompt_command_prompts() {
   __tty_ag_prompt_command_if_left
-#  __tty_ag_prompt_command_if_under
   __tty_ag_prompt_command_if_right
+  __tty_ag_prompt_command_if_under
 }
 
 __tty_ag_prompt_command_title() {
@@ -349,10 +349,12 @@ __tty_ag_prompt_command_trays() {
 __tty_ag_prompt_command() {
   local __TTY_AG_RETVAL=$?
 
-  tput civis
   __tty_ag_prompt_command_title
+
+
+  tput civis
   __tty_ag_prompt_command_prompts
-#  __tty_ag_prompt_command_trays
+  __tty_ag_prompt_command_trays
   tput cnorm
 }
 
@@ -365,13 +367,10 @@ __tty_ag_main() {
     printf "%b" "\0033[41m# opts = ${__tty_ag_opts}\0033[0m\n"
   fi
 
-  if ${__TTY_AG_LEFT_PROMPT}; then
-    __tty_ag_prompt_command_left
-  fi
+  __tty_ag_prompt_command_if_left
 
   PROMPT_COMMAND=__tty_ag_prompt_command
 }
-
 
 
 __tty_ag_main "${@}"

@@ -18,17 +18,18 @@ __tty_ag_show_tray_at_top() {
   local prompt="${1}"
 
   local prompt="${1}"
-  local __tty_ag_format_delta
-  __tty_ag_format_delta "${prompt}"
-  local -i line_len=$(( "${COLUMNS}" - "${__tty_ag_format_delta}"))
+
+  local -i chars_number=0
+  chars_number=$(__tty_ag_format_chars_number "${prompt}")
+  local -i col_line=$(( "${COLUMNS}" - "${chars_number}" ))
 
 
   local -i  win_line
-  win_line="$(( "${line_len}" - 1 ))"
+  win_line="$(( "${col_line}" - 1 ))"
 
 
   tput csr "${win_line}" 0
-  tput cup 1 "${line_len}"
+  tput cup 0 "${col_line}"
   printf '%b' "${prompt}"
   tput rc
 }

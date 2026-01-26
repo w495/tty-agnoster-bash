@@ -27,31 +27,33 @@ __tty_ag_prompt_begin() {
   local position="${1:-${__TTY_AG_SEGMENT_POSITION:-LEFT}}"
   local prompt_ref="__TTY_AG_PS1_${position}"
   local old_bg_name_ref="__TTY_AG_OLD_BG_${position}"
+  local old_fg_name_ref="__TTY_AG_OLD_FG_${position}"
+
 
   eval "${prompt_ref}=''"
   eval "${old_bg_name_ref}=''"
+  eval "${old_fg_name_ref}=''"
+
 }
 
-__tty_ag_prompt_begin_all() {
-  __tty_ag_prompt_begin 'LEFT'
-  __tty_ag_prompt_begin 'RIGHT'
-  __tty_ag_prompt_begin 'BOTTOM'
-  __tty_ag_prompt_begin 'TOP'
-  __tty_ag_prompt_begin 'UNDER'
-}
 
 # Begin a segment
 # Takes two arguments, background and foreground. Both can be omitted,
 # rendering default background/foreground.
+
 __tty_ag_segment() {
   local position="${1:-${__TTY_AG_SEGMENT_POSITION:-LEFT}}"
   local prompt_ref="__TTY_AG_PS1_${position}"
   local old_bg_name_ref="__TTY_AG_OLD_BG_${position}"
+  local old_fg_name_ref="__TTY_AG_OLD_FG_${position}"
+
   local fwd_sep_ref="__TTY_AG_SEGMENT_SEPARATOR_FORWARD_${position}"
   local rev_sep_ref="__TTY_AG_SEGMENT_SEPARATOR_REVERSE_${position}"
 
   local prompt="${!prompt_ref}"
   local old_bg_name="${!old_bg_name_ref}"
+  local old_fg_name="${!old_fg_name_ref}"
+
   local fwd_sep="${!fwd_sep_ref}"
   local rev_sep="${!rev_sep_ref}"
 
@@ -63,15 +65,15 @@ __tty_ag_segment() {
   shift
   __tty_ag_segment_debug "1=${1} 2=${2} 3=${3}"
 
-  local new_bg_name="${1}"
-  local fg_name="${2}"
+  local -l new_bg_name="${1}"
+  local -l new_fg_name="${2}"
   local text="${3}"
 
   __tty_ag_segment_debug "Segment:"
   __tty_ag_segment_debug "old_bg_name=${old_bg_name}"
   __tty_ag_segment_debug "prompt=${prompt}"
   __tty_ag_segment_debug "new_bg_name=${new_bg_name}"
-  __tty_ag_segment_debug "fg_name=${fg_name}"
+  __tty_ag_segment_debug "new_fg_name=${new_fg_name}"
   __tty_ag_segment_debug "text=${text}"
 
   local fmt_code_seq
@@ -80,12 +82,21 @@ __tty_ag_segment() {
   local -i __tty_ag_bg_code
   local __tty_ag_format_head
 
-  fmt_code_seq="${__TTY_AG_EM_CODE_RESET}"
 
   __tty_ag_bg_code "${old_bg_name}"
   local -i old_bg_code="${__tty_ag_bg_code}"
+  __tty_ag_fg_code "${old_fg_name}"
+  local -i old_fg_code="${__tty_ag_fg_code}"
+
   __tty_ag_bg_code "${new_bg_name}"
   local -i new_bg_code="${__tty_ag_bg_code}"
+  __tty_ag_fg_code "${new_fg_name}"
+  local -i new_fg_code="${__tty_ag_fg_code}"
+
+
+  # -----------------------------------------------------------------
+  # Show separator
+  # -----------------------------------------------------------------
 
   if [[ "${old_bg_code}" -eq 0 ]]; then
     __tty_ag_segment_debug "No current background."
@@ -108,26 +119,32 @@ __tty_ag_segment() {
     fi
   fi
 
-  if [[ -n ${new_bg_name} ]]; then
-    __tty_ag_bg_code "${new_bg_name}"
-    fmt_code_seq="${fmt_code_seq} ${__tty_ag_bg_code}"
+  # Show text
+  fmt_code_seq="${__TTY_AG_EM_CODE_RESET}"
+  if [[ ${new_bg_code} -ne 0 ]]; then
+    fmt_code_seq="${fmt_code_seq} ${new_bg_code}"
     __tty_ag_segment_debug "Added ${__tty_ag_bg_code} as bg to fmt_code_seq"
   fi
-  if [[ -n ${fg_name} ]]; then
-    __tty_ag_fg_code "${fg_name}"
-    fmt_code_seq="${fmt_code_seq} ${__tty_ag_fg_code}"
+
+  if [[ ${new_fg_code} -eq 0 ]]; then
+    new_fg_code="${old_fg_code}"
+  fi
+  if [[ ${new_fg_code} -ne 0 ]]; then
+    fmt_code_seq="${fmt_code_seq} ${new_fg_code}"
     __tty_ag_segment_debug "Added ${__tty_ag_fg_code} as fg to fmt_code_seq"
   fi
 
-  local __tty_ag_format_head
   __tty_ag_format_head "${fmt_code_seq}"
-  __tty_ag_segment_debug "post prompt ${__tty_ag_format_head}"
   prompt="${prompt}${__tty_ag_format_head}"
   if [[ -n ${text} ]]; then
     prompt="${prompt}${text}"
   fi
+
+
   eval "${prompt_ref}='${prompt}'"
   eval "${old_bg_name_ref}='${new_bg_name}'"
+  eval "${old_fg_name_ref}='${new_fg_name}'"
+
 }
 
 # End the prompt, closing any open segments
